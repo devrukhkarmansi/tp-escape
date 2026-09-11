@@ -191,11 +191,12 @@ describe('applyAction: pause and resume', () => {
   const pauseAt = (game: GameState, at: number) => applyAction(game, { type: 'pause', at })
   const resumeAt = (game: GameState, at: number) => applyAction(game, { type: 'resume', at })
 
+  // The default test game is a Quick Run: 6 minutes.
   it('freezes the clock while paused', () => {
     const paused = pauseAt(newTestGame(), START + 2 * MINUTE)
     expect(isPaused(paused)).toBe(true)
-    expect(timeLeftMs(paused, START + 2 * MINUTE)).toBe(10 * MINUTE)
-    expect(timeLeftMs(paused, START + 9 * MINUTE)).toBe(10 * MINUTE)
+    expect(timeLeftMs(paused, START + 2 * MINUTE)).toBe(4 * MINUTE)
+    expect(timeLeftMs(paused, START + 9 * MINUTE)).toBe(4 * MINUTE)
   })
 
   it('gives the paused time back on resume', () => {
@@ -203,7 +204,7 @@ describe('applyAction: pause and resume', () => {
     const resumed = resumeAt(pauseAt(game, START + 2 * MINUTE), START + 7 * MINUTE)
     expect(isPaused(resumed)).toBe(false)
     expect(resumed.endsAt).toBe(game.endsAt + 5 * MINUTE)
-    expect(timeLeftMs(resumed, START + 7 * MINUTE)).toBe(10 * MINUTE)
+    expect(timeLeftMs(resumed, START + 7 * MINUTE)).toBe(4 * MINUTE)
     expect('pausedAt' in resumed).toBe(false)
   })
 
@@ -228,8 +229,8 @@ describe('applyAction: pause and resume', () => {
 
   it('keeps alert levels on the original shift length after a pause', () => {
     const game = newTestGame({ difficulty: difficulty('full') })
-    const resumed = resumeAt(pauseAt(game, START + 9 * MINUTE), START + 30 * MINUTE)
-    // 11 of 20 minutes left: still nominal, however long the pause was.
+    const resumed = resumeAt(pauseAt(game, START + 4 * MINUTE), START + 30 * MINUTE)
+    // 6 of 10 minutes left: still nominal, however long the pause was.
     expect(alertLevel(resumed, START + 30 * MINUTE)).toBe('nominal')
   })
 
@@ -237,32 +238,33 @@ describe('applyAction: pause and resume', () => {
     const game = newTestGame()
     const resumed = resumeAt(pauseAt(game, START + MINUTE), START + 50 * MINUTE)
     const won = solveEverything(resumed, START + 51 * MINUTE)
-    // 1 minute played before the pause, 1 after: 10 of 12 minutes left.
-    expect(timeLeftMs(won, won.endedAt!)).toBe(10 * MINUTE)
+    // 1 minute played before the pause, 1 after: 4 of 6 minutes left.
+    expect(timeLeftMs(won, won.endedAt!)).toBe(4 * MINUTE)
   })
 })
 
 describe('timeLeftMs and alertLevel', () => {
+  // Full Shift: 10 minutes.
   const game = newTestGame({ difficulty: difficulty('full') })
 
   it('counts down and never goes negative', () => {
-    expect(timeLeftMs(game, START)).toBe(20 * MINUTE)
-    expect(timeLeftMs(game, START + 5 * MINUTE)).toBe(15 * MINUTE)
+    expect(timeLeftMs(game, START)).toBe(10 * MINUTE)
+    expect(timeLeftMs(game, START + 3 * MINUTE)).toBe(7 * MINUTE)
     expect(timeLeftMs(game, game.endsAt + MINUTE)).toBe(0)
   })
 
   it('freezes when the game is won', () => {
     const won = solveEverything(game, START + 4 * MINUTE)
-    expect(timeLeftMs(won, START + 10 * MINUTE)).toBe(16 * MINUTE)
+    expect(timeLeftMs(won, START + 9 * MINUTE)).toBe(6 * MINUTE)
   })
 
   it.each([
     [0, 'nominal'],
-    [9, 'nominal'],
-    [10, 'caution'],
-    [14, 'caution'],
-    [15, 'critical'],
-  ] as const)('after %i of 20 minutes: %s', (minutesIn, level) => {
+    [4, 'nominal'],
+    [5, 'caution'],
+    [7, 'caution'],
+    [7.5, 'critical'],
+  ] as const)('after %s of 10 minutes: %s', (minutesIn, level) => {
     expect(alertLevel(game, START + minutesIn * MINUTE)).toBe(level)
   })
 })

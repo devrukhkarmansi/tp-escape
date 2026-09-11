@@ -8,7 +8,7 @@
 
 **Kepler-9** is a deep-space relay station that passes messages between the outer colonies and Earth. Three hours ago its five-person crew went silent. The last thing the station sent was a garbled Mayday.
 
-The players are the **relief crew**. The moment they dock, the station's caretaker system, **HALCYON**, seals the module and starts a countdown: _"Contamination protocol engaged. Module purge in 20:00."_ The only way off is the escape pod, and it won't launch until the station's failing systems are restored.
+The players are the **relief crew**. The moment they dock, the station's caretaker system, **HALCYON**, seals the module and starts a countdown: _"Contamination protocol engaged. Module purge in 10:00."_ The only way off is the escape pod, and it won't launch until the station's failing systems are restored.
 
 The crew didn't just vanish. Someone on board caused this, and the evidence the players recover while fixing systems will show who.
 
@@ -84,7 +84,7 @@ Life Support · Airlock Seal · Reactor Core · Nav Array · Comms Relay · Hydr
 
 ## Sample lines (to set the voice)
 
-- **Opening:** _"Docking complete. Welcome aboard Kepler-9, relief crew. Contamination protocol engaged. Please remain calm. Module purge in 20:00."_
+- **Opening:** _"Docking complete. Welcome aboard Kepler-9, relief crew. Contamination protocol engaged. Please remain calm. Module purge in 10:00."_
 - **Solving a system:** _"Life Support restored. Oxygen nominal. Thank you for your cooperation."_
 - **New info:** _"Recovered log, Cmdr. Okafor, 00:14: 'Someone's been in the cargo hold after lights-out. I'm changing the codes.'"_
 - **Emergency:** _"Warning. Venting sections C through F. Please hurry. I would prefer not to purge you."_

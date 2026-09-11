@@ -8,10 +8,10 @@ describe('scoreGame', () => {
     let game = newTestGame({ difficulty: difficulty('full') })
     game = applyAction(game, { type: 'hint', systemId: 'system-0', at: START + 1 })
     game = applyAction(game, { type: 'hint', systemId: 'system-0', at: START + 2 })
-    // Finish with 17:04 (1,024 s) left.
-    const won = solveEverything(game, game.endsAt - 1_024_000)
+    // Finish with 7:04 (424 s) left: 424 / 3 = 141 time points.
+    const won = solveEverything(game, game.endsAt - 424_000)
 
-    expect(scoreGame(won)).toEqual({ systems: 800, time: 341, hints: -40, total: 1101 })
+    expect(scoreGame(won)).toEqual({ systems: 800, time: 141, hints: -40, total: 901 })
   })
 
   it('gives no time bonus when time runs out', () => {
