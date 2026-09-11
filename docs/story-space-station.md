@@ -51,13 +51,13 @@ Picked from the seed at the start of a game (layer 1 in [puzzle-system.md](puzzl
 
 Beats fire at fixed fractions of the shift, so they scale with Quick Run, Full Shift and Deep Space. They line up with the alert levels already in the engine:
 
-| Time left | Alert    | Beat                                                                            |
-| --------- | -------- | ------------------------------------------------------------------------------- |
-| All       | nominal  | **Opening log:** docking, WARDEN seals the module, the countdown starts         |
-| ¾         | nominal  | **New info:** first recovered crew log hints this was sabotage                  |
-| ½         | caution  | **The twist** (one of the three variants)                                       |
-| ¼         | critical | **Emergency:** WARDEN starts venting sections; the lights go red                |
-| End       | —        | **Won:** the pod launches and the culprit is named · **Lost:** "Module purged." |
+| Time left | Alert    | Beat                                                                                                               |
+| --------- | -------- | ------------------------------------------------------------------------------------------------------------------ |
+| All       | nominal  | **Opening log:** docking, WARDEN seals the module, the countdown starts                                            |
+| ¾         | nominal  | **New info:** first recovered crew log hints this was sabotage                                                     |
+| ½         | caution  | **The twist** (one of the three variants)                                                                          |
+| ¼         | critical | **Emergency:** WARDEN starts venting sections; the lights go red                                                   |
+| End       | —        | **Won:** the pod launches and the culprit is named · **Lost:** "Module purged," then the culprit is still revealed |
 
 Each beat gets **3 written variants** in the content bank, so repeat runs read differently.
 
@@ -74,6 +74,7 @@ Each beat gets **3 written variants** in the content bank, so repeat runs read d
 - **Guaranteed solvable:** by the last system, the evidence always rules out every other suspect. The generator checks this, and a test proves it across 1,000 seeds, the same way puzzle answers are checked.
 - **In multiplayer**, evidence is spread across players' private intel, so the crew has to pool it.
 - **Finale screen (Escape Pod):** name the culprit from the three suspects, then enter the launch code built from earlier answers.
+- **Every ending reveals the truth.** Won or lost, the debrief names the culprit, what they took and where it was hidden. A crew that runs out of time still gets the payoff, and their evidence cards show how close they were. _(Decided 2026-09-11.)_
 
 ## Station systems
 
@@ -87,10 +88,15 @@ Life Support · Airlock Seal · Reactor Core · Nav Array · Comms Relay · Hydr
 - **Solving a system:** _"Life Support restored. Oxygen nominal. Thank you for your cooperation."_
 - **New info:** _"Recovered log, Cmdr. Okafor, 00:14: 'Someone's been in the cargo hold after lights-out. I'm changing the codes.'"_
 - **Emergency:** _"Warning. Venting sections C through F. Please hurry. I would prefer not to purge you."_
-- **Lost:** _"Module purged. Kepler-9 will send a Mayday on your behalf."_
+- **Lost:** _"Module purged. Kepler-9 will send a Mayday on your behalf. Final record: the purge order was signed by Dr. Tomas Kessler."_
 
 ## Open questions
 
-- Is **WARDEN** a good name for the station system, or do you have a better one?
-- Should the **lost** ending still reveal the culprit (satisfying), or keep it hidden (makes people want to replay)?
+- **The station system's name.** "WARDEN" is a placeholder. Shortlist:
+  - **HALCYON** (means "calm, peaceful"). Ironic for a system counting down to a purge, and it fits "calm and literal, never evil". _Recommended._
+  - **ECHO**. A relay station repeats messages, and this system repeats orders without question, which ties straight into twist 2 (the forged order).
+  - **ARGUS**. The hundred-eyed watchman from Greek myth. It sees everything, which fits the access-log evidence.
+  - **WARDEN**. Keeper and jailer in one word: it looks after the station and locks you in.
+  - **BEACON**. Ironic, since it's the system that sent the Mayday.
+  - **SOL** ("Station Operations Liaison"). Short, friendly, and an easy name to talk to.
 - Any names or roles you'd like to change in the missing crew, for example to include in-jokes for your team?
