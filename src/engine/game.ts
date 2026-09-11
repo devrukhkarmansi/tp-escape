@@ -1,6 +1,6 @@
-import { checkAnswer } from './check-answer.ts'
+import { checkAnswer, normalizeAnswer } from './check-answer.ts'
 import type { Difficulty, DifficultyId } from './difficulty.ts'
-import type { Puzzle, PuzzleGenerator } from './puzzle.ts'
+import type { Puzzle, PuzzleContext, PuzzleGenerator } from './puzzle.ts'
 import { createRng, type Rng } from './rng.ts'
 import type { ThemePack } from './theme.ts'
 
@@ -62,13 +62,16 @@ export function createGame({ seed, difficulty, theme, generators, startedAt }: N
   const names = rng.shuffle(theme.systemNames).slice(0, difficulty.systems)
   const chosen = spreadGenerators(rng, generators, difficulty.systems)
   const lastIndex = Math.max(1, difficulty.systems - 1)
+  const usedAnswers = new Set<string>()
 
   const systems = names.map((name, index): StationSystem => {
     const generator = chosen[index]!
-    // Each system gets its own generator seeded from the game, so one puzzle type drawing more or
+    // Each system gets its own seed drawn from the game's, so one puzzle type drawing more or
     // fewer random numbers never shifts the puzzles in other systems.
-    const puzzleRng = createRng(rng.int(0, 0xffffffff))
-    const puzzle = generator.generate(puzzleRng, { level: index / lastIndex, theme })
+    const systemSeed = rng.int(0, 0xffffffff)
+    const context = { level: index / lastIndex, theme }
+    const puzzle = generateUnique(generator, systemSeed, context, usedAnswers)
+    usedAnswers.add(normalizeAnswer(puzzle.answer))
     return {
       id: `system-${index}`,
       name,
@@ -88,6 +91,26 @@ export function createGame({ seed, difficulty, theme, generators, startedAt }: N
     status: 'playing',
     systems,
   }
+}
+
+const MAX_ATTEMPTS = 20
+
+/**
+ * No two systems in a game share an answer. Retries use variations of the system's own seed,
+ * never the game's generator, so a retry here can't change any other system.
+ */
+function generateUnique(
+  generator: PuzzleGenerator,
+  systemSeed: number,
+  context: PuzzleContext,
+  usedAnswers: ReadonlySet<string>,
+) {
+  let puzzle = generator.generate(createRng(systemSeed), context)
+  for (let attempt = 1; attempt < MAX_ATTEMPTS; attempt++) {
+    if (!usedAnswers.has(normalizeAnswer(puzzle.answer))) break
+    puzzle = generator.generate(createRng(systemSeed + attempt * 0x9e3779b9), context)
+  }
+  return puzzle
 }
 
 /** Uses every puzzle type before repeating any, so a game never leans on one kind. */

@@ -46,19 +46,26 @@ Adding a puzzle type means writing one generator file and adding it to the list 
 
 The host creates a random **seed** and saves it in the room document. Every phone runs the same generators with that seed and a deterministic random number generator, so every phone gets identical puzzles without storing puzzle content in Firestore.
 
+As built (`src/engine/puzzle.ts`):
+
 ```ts
 type Puzzle = {
-  id: string // e.g. "caesar:8f3a"
-  kind: PuzzleKind
-  prompt: string // themed text
-  answer: string // or a hash of it
-  altAnswers?: string[]
-  hints: string[]
-  splits?: string[][] // intel fragments per player slot, merged for solo
+  id: string // e.g. "caesar-3"
+  kind: string // which generator made it
+  prompt: string // in-world instructions: "Intercepted transmission. Every letter was moved…"
+  display?: string // the thing to work on, shown large: "TFOTPS", "7, 11, 15, 19, 23"
+  answer: string
+  altAnswers?: readonly string[]
+  hints: readonly string[] // revealed one at a time, easiest nudge first
 }
 
-type Generator = (rng: Rng, difficulty: Difficulty, theme: ThemePack) => Puzzle
+type PuzzleGenerator = {
+  kind: string
+  generate(rng: Rng, context: { level: number; theme: ThemePack }): Omit<Puzzle, 'id' | 'kind'>
+}
 ```
+
+`level` goes from 0 (first system) to 1 (last), so puzzles get harder through a game. Split information for multiplayer gets added in stage 4.
 
 Learning angle: seeded PRNGs (e.g. mulberry32), pure functions, and deterministic generation. Replaying a seed also makes bugs reproducible.
 
@@ -94,7 +101,8 @@ This is what makes replays worthwhile: the same theme can play out with a differ
 
 ## Avoiding repeats
 
-- **Generated puzzles:** the parameter space is huge, so repeats are rare by chance. We also avoid using the same _type_ twice in a run unless the difficulty needs it.
+- **Within one game (built):** no two systems share an answer. If a puzzle repeats an earlier answer, it's regenerated from a variation of that system's own seed, so no other system changes. Every puzzle type is used once before any repeats.
+- **Generated puzzles, across games:** the parameter space is huge, so repeats are rare by chance.
 - **Bank content** (riddles, story variants): track seen item ids per player (Firestore under their anonymous uid, falling back to localStorage). When picking, prefer items that the fewest current crew members have seen.
 
 ## Answer checking
@@ -111,4 +119,16 @@ Each generator takes a difficulty setting: cipher shift range, sequence rule com
 
 - Puzzle types: everything marked ✅ in the v1 column of the catalog above
 - Riddle bank: ~30 riddles for the space station theme
-- Story variants: 3 versions of each story beat (opening log, 20:00 reveal, twist, 5:00 emergency, ending)
+- Story variants: 3 versions of each story beat (opening log, ¾ reveal, twist, ¼ emergency, ending)
+
+## Built so far
+
+| Stage | What                                                                                                                    | Where                            |
+| ----- | ----------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| 2B    | Letter-shift code (`caesar`): shift stated early, one letter pair mid-game, found by the player late (4–12)             | `src/engine/puzzles/caesar.ts`   |
+| 2B    | Number pattern (`sequence`): constant steps early; doubling/alternating mid; growing steps, sum-of-two and squares late | `src/engine/puzzles/sequence.ts` |
+| 2B    | Unscramble (`anagram`): theme words, 4–6 letters early up to 7–9 late                                                   | `src/engine/puzzles/anagram.ts`  |
+| 2B    | Riddle bank (`riddle`): 15 of the ~30 target                                                                            | `src/engine/puzzles/riddle.ts`   |
+| 2B    | Space station content: 14 systems, 61 words, 15 riddles, intros per puzzle type                                         | `src/content/space-station/`     |
+
+Tests check every type against 1,000 seeds, check that each puzzle's instructions are true, and play 1,000 full games per shift length.

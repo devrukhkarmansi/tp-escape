@@ -71,6 +71,20 @@ describe('createGame', () => {
     expect(steadyAnswers(1)).toEqual(steadyAnswers(100))
   })
 
+  it('never repeats an answer within a game', () => {
+    const tiny: PuzzleGenerator = {
+      kind: 'tiny',
+      generate: (rng) => {
+        const n = rng.int(1, 10)
+        return { prompt: `Enter ${n}`, answer: String(n), hints: ['A number'] }
+      },
+    }
+    for (let seed = 0; seed < 200; seed++) {
+      const answers = newTestGame({ seed, generators: [tiny] }).systems.map((s) => s.puzzle.answer)
+      expect(new Set(answers).size).toBe(answers.length)
+    }
+  })
+
   it('refuses a theme with too few systems for the shift', () => {
     const tiny = { ...testTheme, systemNames: ['Only one'] }
     expect(() => newTestGame({ theme: tiny })).toThrow(/needs 5/)
