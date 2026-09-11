@@ -1,18 +1,34 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { alertLevel, isPaused, OPEN_AT_ONCE, timeLeftMs } from '../../engine/game.ts'
+import {
+  alertLevel,
+  isFinale,
+  isPaused,
+  OPEN_AT_ONCE,
+  timeLeftMs,
+  type GameState,
+  type StationSystem,
+} from '../../engine/game.ts'
+import { beatsDue, transmissionFor, type StoryBeat } from '../../engine/story.ts'
+import type { Transmission } from '../../engine/theme.ts'
 import { isOnline, type Player } from '../../store/crew.ts'
 import type { GameStore } from '../../store/game-store.ts'
 import Backdrop from '../components/Backdrop.tsx'
+import EvidenceLog from '../components/EvidenceLog.tsx'
+import FinalePanel from '../components/FinalePanel.tsx'
 import GameHeader from '../components/GameHeader.tsx'
 import PausedPanel from '../components/PausedPanel.tsx'
 import SystemCard, { type Viewer } from '../components/SystemCard.tsx'
 import SystemPanel from '../components/SystemPanel.tsx'
 import Toast from '../components/Toast.tsx'
+import TransmissionLog from '../components/TransmissionLog.tsx'
+import TransmissionOverlay from '../components/TransmissionOverlay.tsx'
+import { formatClock } from '../format.ts'
 import { useGame } from '../hooks/use-game.ts'
 import { useNow } from '../hooks/use-now.ts'
 import { useSoundSetting } from '../hooks/use-sound-setting.ts'
 import { THEME } from '../solo-game.ts'
-import { playTick, playTimeUp } from '../sound.ts'
+import { playTick, playTimeUp, playTransmission } from '../sound.ts'
+import { loadSeenBeats, saveSeenBeats } from '../story-seen.ts'
 import DebriefScreen from './DebriefScreen.tsx'
 
 const FINAL_MINUTE_MS = 60_000
@@ -63,6 +79,29 @@ export default function GameScreen({
   const timeLeft = timeLeftMs(game, now)
   const secondsLeft = Math.ceil(timeLeft / 1000)
   const finalMinute = playing && !paused && timeLeft > 0 && timeLeft <= FINAL_MINUTE_MS
+
+  // Story: the clock decides which transmissions have played (the same on every phone); this
+  // device only remembers which ones it has already shown.
+  const gameKey = `${game.seed}-${game.startedAt}`
+  const due = beatsDue(game, now)
+  const [seenBeats, setSeenBeats] = useState<StoryBeat[]>(() => loadSeenBeats(gameKey))
+  const [reopened, setReopened] = useState<StoryBeat | null>(null)
+  const unseen = due.filter((beat) => !seenBeats.includes(beat))
+  const newestUnseen = unseen.at(-1) ?? null
+  const showing = reopened ?? newestUnseen
+
+  useEffect(() => {
+    if (newestUnseen && soundOn) playTransmission()
+  }, [newestUnseen, soundOn])
+
+  function closeTransmission() {
+    if (unseen.length > 0) {
+      const next = [...seenBeats, ...unseen]
+      setSeenBeats(next)
+      saveSeenBeats(gameKey, next)
+    }
+    setReopened(null)
+  }
 
   // The engine never reads the clock, so the screen tells it when time has run out.
   useEffect(() => {
@@ -207,6 +246,11 @@ export default function GameScreen({
                 </li>
               ))}
             </ul>
+            <EvidenceLog cards={revealedEvidence(game)} total={game.mystery.evidence.length} />
+            <TransmissionLog
+              entries={due.map((beat) => ({ beat, transmission: storyText(game, beat) }))}
+              onOpen={setReopened}
+            />
             <button
               type="button"
               onClick={exit}
@@ -216,7 +260,21 @@ export default function GameScreen({
             </button>
           </nav>
 
-          {selected ? (
+          {selected && isFinale(selected) && selected.status === 'open' ? (
+            <FinalePanel
+              key={selected.id}
+              system={selected}
+              mystery={game.mystery}
+              suspects={THEME.mystery.suspects}
+              codeSystems={codeSystemsFor(game, selected)}
+              onOpenSystem={select}
+              onBack={() => select(null)}
+              onAccuse={(suspectId, code) =>
+                store.dispatch({ type: 'accuse', suspectId, code, playerId, at: clock() })
+              }
+              onHint={() => store.dispatch({ type: 'hint', systemId: selected.id, at: clock() })}
+            />
+          ) : selected ? (
             <SystemPanel
               key={selected.id}
               system={selected}
@@ -253,6 +311,46 @@ export default function GameScreen({
           <Toast key={toast.id} id={toast.id} text={toast.text} onDone={dismissToast} />
         ))}
       </div>
+
+      {showing && (
+        <TransmissionOverlay
+          key={showing}
+          beat={showing}
+          transmission={storyText(game, showing)}
+          onClose={closeTransmission}
+        />
+      )}
     </div>
   )
+}
+
+/** Evidence from restored systems, newest first. Card i belongs to system i (board order). */
+function revealedEvidence(game: GameState) {
+  return game.systems
+    .flatMap((system, index) => {
+      const card = game.mystery.evidence[index]
+      return card && !isFinale(system) && system.status === 'solved'
+        ? [{ id: system.id, systemName: system.name, card, at: system.solvedAt ?? 0 }]
+        : []
+    })
+    .sort((a, b) => b.at - a.at)
+}
+
+/** The systems named in the launch code, in code order. */
+function codeSystemsFor(game: GameState, escapePod: StationSystem) {
+  const names = escapePod.puzzle.display?.split('  ·  ') ?? []
+  return names.flatMap((name) => {
+    const system = game.systems.find((s) => s.name === name)
+    return system ? [{ id: system.id, name, restored: system.status === 'solved' }] : []
+  })
+}
+
+/** This game's version of a story moment, with `{time}` filled in as the shift length. */
+function storyText(game: GameState, beat: StoryBeat): Transmission {
+  const transmission = transmissionFor(game, THEME, beat)
+  const time = formatClock(game.durationMs)
+  return {
+    ...transmission,
+    lines: transmission.lines.map((line) => line.replaceAll('{time}', time)),
+  }
 }

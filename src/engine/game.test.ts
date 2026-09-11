@@ -31,13 +31,14 @@ describe('createGame', () => {
   })
 
   it.each(['quick', 'full', 'deep'] as const)(
-    '%s: one system per slot, the first few open',
+    '%s: one system per slot plus the Escape Pod, the first few open',
     (id) => {
       const tier = difficulty(id)
       const game = newTestGame({ difficulty: tier })
-      expect(game.systems).toHaveLength(tier.systems)
+      expect(game.systems).toHaveLength(tier.systems + 1)
       expect(game.systems.filter((s) => s.status === 'open')).toHaveLength(OPEN_AT_ONCE)
-      expect(new Set(game.systems.map((s) => s.name)).size).toBe(tier.systems)
+      expect(new Set(game.systems.map((s) => s.name)).size).toBe(tier.systems + 1)
+      expect(game.systems.at(-1)).toMatchObject({ name: 'Escape Pod', status: 'locked' })
       expect(game.endsAt - game.startedAt).toBe(tier.minutes * MINUTE)
     },
   )

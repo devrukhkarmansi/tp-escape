@@ -4,8 +4,8 @@ export type KeyValueStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'
 
 const KEY = 'tp-escape:solo-game'
 // Bump when GameState's shape changes, so an old save is ignored instead of breaking the game.
-// 2: added durationMs and pausedAt.
-const VERSION = 2
+// 2: added durationMs and pausedAt. 3: added the mystery and the Escape Pod.
+const VERSION = 3
 
 type Saved = { version: number; state: GameState }
 

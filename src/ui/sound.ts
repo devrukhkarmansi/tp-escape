@@ -44,6 +44,13 @@ export function playTick(urgent: boolean): void {
   )
 }
 
+/** Incoming transmission: three soft rising tones. */
+export function playTransmission(): void {
+  for (const [index, frequency] of [660, 880, 1320].entries()) {
+    beep({ frequency, duration: 0.12, volume: 0.08, type: 'sine', delay: index * 0.11 })
+  }
+}
+
 /** Time's up: three falling pulses. */
 export function playTimeUp(): void {
   for (const [index, delay] of [0, 0.28, 0.56].entries()) {

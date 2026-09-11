@@ -1,5 +1,6 @@
 import { checkAnswer, normalizeAnswer } from './check-answer.ts'
 import type { Difficulty, DifficultyId } from './difficulty.ts'
+import { createMystery, FINALE_KIND, type Mystery } from './mystery.ts'
 import type { Puzzle, PuzzleContext, PuzzleGenerator } from './puzzle.ts'
 import { createRng, type Rng } from './rng.ts'
 import type { ThemePack } from './theme.ts'
@@ -34,7 +35,9 @@ export type GameState = {
   pausedAt?: number
   status: GameStatus
   endedAt?: number
+  /** The puzzle systems in board order, then the Escape Pod finale last. */
   systems: readonly StationSystem[]
+  mystery: Mystery
 }
 
 // Every action carries its own time (`at`) so the engine never reads the clock itself.
@@ -45,6 +48,8 @@ export type GameAction =
   | { type: 'tick'; at: number }
   | { type: 'pause'; at: number }
   | { type: 'resume'; at: number }
+  /** The finale: name the traitor and enter the launch code, both at once. */
+  | { type: 'accuse'; suspectId: string; code: string; playerId: string; at: number }
 
 export type NewGame = {
   seed: number
@@ -88,6 +93,20 @@ export function createGame({ seed, difficulty, theme, generators, startedAt }: N
     }
   })
 
+  const { mystery, finale } = createMystery(
+    seed,
+    theme,
+    systems.map((s) => ({ name: s.name, answer: s.puzzle.answer })),
+  )
+  const escapePod: StationSystem = {
+    id: 'system-finale',
+    name: theme.mystery.finaleSystemName,
+    puzzle: { id: FINALE_KIND, ...finale },
+    status: 'locked',
+    hintsUsed: 0,
+    wrongAttempts: 0,
+  }
+
   const durationMs = difficulty.minutes * 60_000
   return {
     seed,
@@ -97,8 +116,13 @@ export function createGame({ seed, difficulty, theme, generators, startedAt }: N
     durationMs,
     endsAt: startedAt + durationMs,
     status: 'playing',
-    systems,
+    systems: [...systems, escapePod],
+    mystery,
   }
+}
+
+export function isFinale(system: StationSystem): boolean {
+  return system.puzzle.kind === FINALE_KIND
 }
 
 const MAX_ATTEMPTS = 20
@@ -158,6 +182,8 @@ export function applyAction(state: GameState, action: GameAction): GameState {
       return revealHint(state, action.systemId)
     case 'submit':
       return submitAnswer(state, action)
+    case 'accuse':
+      return accuse(state, action)
   }
 }
 
@@ -177,18 +203,49 @@ function submitAnswer(
   { systemId, answer, playerId, at }: Extract<GameAction, { type: 'submit' }>,
 ): GameState {
   const system = state.systems.find((s) => s.id === systemId)
-  if (!system || system.status !== 'open') return state
+  // The Escape Pod takes an accusation, not a typed answer.
+  if (!system || system.status !== 'open' || isFinale(system)) return state
 
   if (!checkAnswer(system.puzzle, answer)) {
     return withSystem(state, systemId, { wrongAttempts: system.wrongAttempts + 1 })
   }
 
   const solved = withSystem(state, systemId, { status: 'solved', solvedBy: playerId, solvedAt: at })
-  const nextLocked = solved.systems.find((s) => s.status === 'locked')
-  const opened = nextLocked ? withSystem(solved, nextLocked.id, { status: 'open' }) : solved
+  return openNext(solved)
+}
 
-  const allSolved = opened.systems.every((s) => s.status === 'solved')
-  return allSolved ? { ...opened, status: 'won', endedAt: at } : opened
+/** Opens the next locked puzzle system; the Escape Pod only once every other system is restored. */
+function openNext(state: GameState): GameState {
+  const nextLocked = state.systems.find((s) => s.status === 'locked' && !isFinale(s))
+  if (nextLocked) return withSystem(state, nextLocked.id, { status: 'open' })
+
+  const escapePod = state.systems.find(isFinale)
+  const othersRestored = state.systems.every((s) => isFinale(s) || s.status === 'solved')
+  if (escapePod?.status === 'locked' && othersRestored) {
+    return withSystem(state, escapePod.id, { status: 'open' })
+  }
+  return state
+}
+
+/** Right traitor and right launch code: the pod launches and the crew wins. Otherwise it's refused. */
+function accuse(
+  state: GameState,
+  { suspectId, code, playerId, at }: Extract<GameAction, { type: 'accuse' }>,
+): GameState {
+  const escapePod = state.systems.find(isFinale)
+  if (!escapePod || escapePod.status !== 'open') return state
+
+  const correct = suspectId === state.mystery.culpritId && checkAnswer(escapePod.puzzle, code)
+  if (!correct) {
+    return withSystem(state, escapePod.id, { wrongAttempts: escapePod.wrongAttempts + 1 })
+  }
+
+  const launched = withSystem(state, escapePod.id, {
+    status: 'solved',
+    solvedBy: playerId,
+    solvedAt: at,
+  })
+  return { ...launched, status: 'won', endedAt: at }
 }
 
 function withSystem(

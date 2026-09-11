@@ -199,4 +199,149 @@ export const spaceStation: ThemePack = {
     ],
     riddle: ['HALCYON voice lock', "Commander's security question", 'Personal locker prompt'],
   },
+
+  // See docs/story-space-station.md. HALCYON is calm and literal, never evil: it's following orders.
+  story: {
+    opening: [
+      {
+        from: 'HALCYON',
+        lines: [
+          'Docking complete. Welcome aboard Kepler-9, relief crew.',
+          'Contamination protocol engaged. Please remain calm.',
+          'Module purge in {time}.',
+        ],
+      },
+      {
+        from: 'HALCYON',
+        lines: [
+          'Relief crew detected. The previous crew is… unavailable.',
+          'I have sealed this module for your safety. Purge in {time}.',
+          'Restore the station systems to unlock the escape pod.',
+        ],
+      },
+      {
+        from: 'HALCYON',
+        lines: [
+          'Hello. I am HALCYON, caretaker of Kepler-9.',
+          'This module will be purged in {time}.',
+          'I would prefer you were not in it.',
+        ],
+      },
+    ],
+    newInfo: [
+      {
+        from: 'Cmdr. Ines Okafor',
+        lines: [
+          '00:14. Someone has been in the cargo hold after lights-out.',
+          "I'm changing the access codes tonight.",
+        ],
+      },
+      {
+        from: 'Priya Nair · Communications',
+        lines: ["01:02. The Mayday didn't come from my console.", 'I never sent it. So who did?'],
+      },
+      {
+        from: 'Jun Park · Medic',
+        lines: [
+          '01:40. Three cryo pods powered up overnight.',
+          'Nobody asked me. Nobody else is trained to run them.',
+        ],
+      },
+    ],
+    twist: [
+      {
+        from: 'Kepler-9 comms archive',
+        lines: [
+          'Origin: this station, three hours ago.',
+          '"The relief crew is on its way. When they dock, the purge takes them instead of us."',
+          'You were never sent to rescue them. You were sent to take the blame.',
+        ],
+      },
+      {
+        from: 'HALCYON',
+        lines: [
+          'Correction. This purge is not a malfunction.',
+          'It is a quarantine order, signed with a crew member’s credentials.',
+          'I am only following it.',
+        ],
+      },
+      {
+        from: 'HALCYON',
+        lines: [
+          'Update. Five life signs detected in the cryo bay.',
+          'The missing crew never left.',
+          'Someone put them to sleep.',
+        ],
+      },
+    ],
+    emergency: [
+      {
+        from: 'HALCYON',
+        lines: [
+          'Warning. Venting sections C through F.',
+          'Please hurry. I would prefer not to purge you.',
+        ],
+      },
+      {
+        from: 'HALCYON',
+        lines: ['Oxygen reserves at 25%. Purge sequence arming.', 'This is your final quarter.'],
+      },
+      {
+        from: 'HALCYON',
+        lines: ['Critical: reactor containment failing.', 'I am counting down for you now.'],
+      },
+    ],
+    won: [
+      'Escape pod launched. Kepler-9 thanks you for your cooperation. HALCYON, signing off.',
+      'Systems restored. Purge cancelled. Please close the airlock behind you.',
+      'Well done, relief crew. I did not expect you to make it. That is a compliment.',
+    ],
+    lost: [
+      'Module purged. Kepler-9 will send a Mayday on your behalf.',
+      'Purge complete. I am sorry. I did say please hurry.',
+      'The module is quiet again. Next relief crew arriving in 72 hours.',
+    ],
+  },
+
+  // The finale. Each game picks 3 of these 5 as suspects, one as the traitor.
+  mystery: {
+    finaleSystemName: 'Escape Pod',
+    suspects: [
+      { id: 'okafor', name: 'Cmdr. Ines Okafor', role: 'Station commander' },
+      { id: 'kessler', name: 'Dr. Tomas Kessler', role: 'Systems engineer' },
+      { id: 'nair', name: 'Priya Nair', role: 'Communications' },
+      { id: 'park', name: 'Jun Park', role: 'Medic' },
+      { id: 'volkov', name: 'Sasha Volkov', role: 'Cargo and supply' },
+    ],
+    items: ["the relay's encryption core", 'a sealed cryo sample', "HALCYON's black-box log"],
+    places: ['in cargo crate 7', 'inside a cryo pod', 'inside the escape pod itself'],
+    // Every alibi must clear its suspect beyond doubt: the finale is solved by elimination.
+    alibis: [
+      'Comms log: {name} was on a call to Earth from 03:30 to 04:10. They could not have signed the purge order.',
+      'Med bay camera: {name} slept in their bunk from midnight to 06:00. Cleared.',
+      "{name}'s badge never left the hydroponics bay after midnight, nowhere near the order console. Cleared.",
+      'Gym log: {name} was on the treadmill from 03:00 to 04:30, heart-rate strap on. Cleared.',
+    ],
+    itemClues: [
+      'Inventory check: {item} is missing.',
+      'Vault seal broken at 03:52. Only one thing was taken: {item}.',
+    ],
+    placeClues: [
+      'Power trace: an unregistered device is drawing current {place}.',
+      'Maintenance drone report: a seal was cut and resealed {place}.',
+    ],
+    // Atmosphere and red herrings. They may name anyone, but never clear anyone.
+    logs: [
+      "{name}'s last log entry: 'Something's wrong with HALCYON.'",
+      'The purge order was signed at 03:47, station time.',
+      'Someone wiped the airlock cameras between 03:40 and 04:00.',
+      '{name} asked to transfer off Kepler-9 last month. Request denied.',
+      'A coffee cup, still warm, was left beside the order console.',
+      'The Mayday was sent from a handheld, not the comms console.',
+      "HALCYON: 'I followed the order. It carried valid crew credentials.'",
+      "Three hours of the crew's chat log are missing.",
+      'Cargo manifest edited at 03:55. The author field is blank.',
+      '{name} was seen near the cargo hold after lights-out.',
+    ],
+  },
 }

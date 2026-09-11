@@ -1,5 +1,6 @@
-import { timeLeftMs, type GameState } from '../../engine/game.ts'
+import { isFinale, timeLeftMs, type GameState } from '../../engine/game.ts'
 import { POINTS, scoreGame } from '../../engine/score.ts'
+import { endingFor } from '../../engine/story.ts'
 import Backdrop from '../components/Backdrop.tsx'
 import { formatClock, formatPoints } from '../format.ts'
 import { puzzleKindLabel } from '../labels.ts'
@@ -29,15 +30,23 @@ export default function DebriefScreen({
 }: Props) {
   const won = game.status === 'won'
   const score = scoreGame(game)
-  const total = game.systems.length
+  const puzzleSystems = game.systems.filter((s) => !isFinale(s))
+  const restored = puzzleSystems.filter((s) => s.status === 'solved').length
   const solved = game.systems.filter((s) => s.status === 'solved').length
   const hintsUsed = game.systems.reduce((sum, s) => sum + s.hintsUsed, 0)
+  const wrongAccusations = game.systems.find(isFinale)?.wrongAttempts ?? 0
   const timeLeft = timeLeftMs(game, game.endedAt ?? game.endsAt)
+
+  const { suspects } = THEME.mystery
+  const culprit = suspects.find((s) => s.id === game.mystery.culpritId)
 
   const rows = [
     { label: `Systems restored (${solved} × ${POINTS.perSystem})`, points: score.systems },
     { label: 'Time bonus', points: score.time },
     { label: `Hints used (${hintsUsed})`, points: score.hints },
+    ...(wrongAccusations > 0
+      ? [{ label: `Wrong accusations (${wrongAccusations})`, points: score.accusations }]
+      : []),
   ]
 
   return (
@@ -55,9 +64,30 @@ export default function DebriefScreen({
           </h1>
           <p className="mt-4 text-base/7 text-balance text-ink-muted">
             {won
-              ? `All ${total} systems restored with ${formatClock(timeLeft)} to spare.`
-              : `${solved} of ${total} systems restored before the purge.`}
+              ? `Escape pod launched with ${formatClock(timeLeft)} to spare.`
+              : `${restored} of ${puzzleSystems.length} systems restored before the purge.`}
           </p>
+          <p className="mt-3 font-display text-sm/6 text-balance text-ink-muted italic">
+            HALCYON: “{endingFor(game, THEME)}”
+          </p>
+
+          {/* Every ending reveals the truth, win or lose (docs/story-space-station.md). */}
+          {culprit && (
+            <div className="mt-8 rounded-xl border border-caution/50 bg-caution/5 p-5">
+              <p className="font-display text-[11px] tracking-[0.18em] text-caution uppercase">
+                The truth
+              </p>
+              <p className="mt-3 text-base/7 text-balance">
+                <span className="font-bold">{culprit.name}</span> ({culprit.role.toLowerCase()})
+                signed the purge order. They took {game.mystery.item}, hidden {game.mystery.place}.
+              </p>
+              <p className="mt-2 text-sm text-ink-muted">
+                {won
+                  ? 'Your crew named them and launched the pod.'
+                  : 'The purge came before anyone could name them.'}
+              </p>
+            </div>
+          )}
 
           <dl className="mt-8 overflow-hidden rounded-xl border border-line bg-panel/80 font-display text-sm">
             {rows.map((row) => (
