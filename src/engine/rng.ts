@@ -4,6 +4,8 @@ export type Rng = {
   /** Integer in [min, max], both ends inclusive. */
   int(min: number, max: number): number
   pick<T>(items: readonly T[]): T
+  /** A shuffled copy; the input is left untouched. */
+  shuffle<T>(items: readonly T[]): T[]
 }
 
 // mulberry32: tiny and fast, fine for games, not for security.
@@ -28,6 +30,15 @@ export function createRng(seed: number): Rng {
     pick(items) {
       if (items.length === 0) throw new Error('pick() needs at least one item')
       return items[Math.floor(next() * items.length)]!
+    },
+    shuffle(items) {
+      // Fisher–Yates: every ordering is equally likely.
+      const copy = [...items]
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(next() * (i + 1))
+        ;[copy[i], copy[j]] = [copy[j]!, copy[i]!]
+      }
+      return copy
     },
   }
 }

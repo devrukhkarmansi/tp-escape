@@ -53,4 +53,17 @@ describe('createRng', () => {
   it('pick() rejects an empty list', () => {
     expect(() => createRng(1).pick([])).toThrow()
   })
+
+  it('shuffle() returns a reordered copy with the same items', () => {
+    const items = [1, 2, 3, 4, 5, 6, 7, 8]
+    const shuffled = createRng(3).shuffle(items)
+    expect(items).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
+    expect([...shuffled].sort()).toEqual(items)
+    expect(shuffled).not.toEqual(items)
+  })
+
+  it('shuffle() is repeatable for the same seed', () => {
+    const items = ['a', 'b', 'c', 'd', 'e']
+    expect(createRng(11).shuffle(items)).toEqual(createRng(11).shuffle(items))
+  })
 })
