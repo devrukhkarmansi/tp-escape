@@ -1,0 +1,52 @@
+// Every sound is generated with the Web Audio API, so there are no audio files to load.
+let context: AudioContext | null = null
+
+/** Browsers (iPhones especially) only allow sound after a tap or key press, so call this from one. */
+export function unlockAudio(): void {
+  try {
+    context ??= new AudioContext()
+    if (context.state === 'suspended') void context.resume()
+  } catch {
+    // No Web Audio support: the game simply stays silent.
+  }
+}
+
+type Beep = {
+  frequency: number
+  duration: number
+  volume: number
+  type: OscillatorType
+  delay?: number
+}
+
+function beep({ frequency, duration, volume, type, delay = 0 }: Beep): void {
+  if (!context || context.state !== 'running') return
+  const start = context.currentTime + delay
+  const oscillator = context.createOscillator()
+  const gain = context.createGain()
+  oscillator.type = type
+  oscillator.frequency.setValueAtTime(frequency, start)
+  // A very fast fade in and out stops the speaker "clicking" at the edges of the tone.
+  gain.gain.setValueAtTime(0.0001, start)
+  gain.gain.exponentialRampToValueAtTime(volume, start + 0.008)
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration)
+  oscillator.connect(gain).connect(context.destination)
+  oscillator.start(start)
+  oscillator.stop(start + duration + 0.02)
+}
+
+/** One clock tick. The last ten seconds are higher and sharper. */
+export function playTick(urgent: boolean): void {
+  beep(
+    urgent
+      ? { frequency: 1480, duration: 0.09, volume: 0.12, type: 'square' }
+      : { frequency: 1040, duration: 0.06, volume: 0.07, type: 'triangle' },
+  )
+}
+
+/** Time's up: three falling pulses. */
+export function playTimeUp(): void {
+  for (const [index, delay] of [0, 0.28, 0.56].entries()) {
+    beep({ frequency: 330 - index * 60, duration: 0.24, volume: 0.14, type: 'sawtooth', delay })
+  }
+}

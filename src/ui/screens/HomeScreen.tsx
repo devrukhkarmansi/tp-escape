@@ -70,7 +70,7 @@ export default function HomeScreen({ onPlaySolo }: Props) {
                   </span>
                 </span>
                 <span className="font-display text-xs text-ink-muted tabular-nums">
-                  ~{tier.minutes} min
+                  {tier.minutes} min
                 </span>
               </label>
             ))}
