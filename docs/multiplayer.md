@@ -1,23 +1,25 @@
 # Multiplayer — Stage 3 Plan
 
-**Status:** proposal, for review · **Last updated:** 2026-09-11
+**Status:** agreed · **Last updated:** 2026-09-11
 **Related:** [game-design.md](game-design.md) · [engineering.md](engineering.md) · [puzzle-system.md](puzzle-system.md)
 
 ## Goal
 
 A crew of 1–6 plays **one shared game from their own phones or laptops**. The host creates a crew, the others join with a link or a code, and everyone sees the same board live. Anyone can work on any open system, and when someone solves one, it updates on every screen within about a second.
 
-**Not in stage 3:** private intel and split puzzles, story beats, the traitor finale (all stage 4); sound (stage 3½, straight after); named awards (stage 5). **Play solo** keeps working exactly as it does today, with no Firebase and no network needed.
+**Not in stage 3:** private intel and split puzzles, story beats, the traitor finale (all stage 4); the rest of the sound, meaning alert chimes and solve/wrong tones (stage 3½, straight after; final-minute ticking already shipped in #12); named awards (stage 5). **Play solo** keeps working exactly as it does today, with no Firebase and no network needed.
 
 ## How it plays
 
 1. **Host:** Home → **Host a crew** → pick shift length → enter a name → **lobby** with the crew code (`K7QXM`) and a share link (`tp-escape-deploy.vercel.app/c/K7QXM`).
 2. **Crew:** open the link (or **Join with code**) → enter a name → the lobby shows everyone who's in.
 3. **Host taps Launch.** Every screen switches to the board at the same moment, with the same timer.
-4. **Anyone solves anything.** Solving a system updates every screen, with a toast: _"Ravi restored Life Support."_
-5. **Debrief for everyone**, showing who restored what. **Play again** keeps the same crew and code.
+4. **Anyone solves anything.** Each system card shows who's working on it (a small "Ravi" tag), so the crew can split up. Solving a system updates every screen, with a toast: _"Ravi restored Life Support."_
+5. **Debrief for everyone**, showing who restored what. **Play again** keeps the same crew and code: everyone goes back to the lobby together, and the host launches the next round.
 
 Late joiners can join mid-game. A phone that locks or drops rejoins automatically when it comes back.
+
+**Host powers:** Launch, Play again, and **pause for everyone**. Nobody can remove players. When the host pauses, every screen shows the paused view with _"Paused by Mansi"_, and only the host can resume. If the host drops out while paused, the next host can resume.
 
 ## Architecture
 
@@ -56,10 +58,12 @@ rooms/{code}
 
 rooms/{code}/players/{uid}
   name (1–16 chars), color, joinedAt, lastSeen (server time)
-  viewing: systemId | null      ← only if we show "who's on what" (see decisions)
+  viewing: systemId | null      ← powers the "Ravi" tag on system cards
 ```
 
 **The host isn't stored.** It's computed as the earliest-joined player seen in the last 60 seconds. So if the host's phone dies, the next person automatically becomes host, with no extra code or writes.
+
+Because the host is computed rather than stored, the security rules can't check "only the host may pause"; the app enforces it by only showing the host the pause button. That's fine for friendly games, and it's the same trust level as the rest of the game state.
 
 ### Keeping the timer in sync
 
@@ -109,8 +113,11 @@ These involve your accounts and keys, so they're yours:
 3. **Firebase CLI login:** run `npx firebase login` once, after 3A adds the CLI. It's needed to run the emulators and publish security rules.
 4. **Authorized domain:** Firebase console → **Authentication → Settings → Authorized domains** → add `tp-escape-deploy.vercel.app`.
 
-## Decisions for you
+## Decisions (agreed 2026-09-11)
 
-1. **Show who's working on what?** For example, a small "Ravi" tag on the Reactor Core card. It helps a crew split up, which is the whole point of parallel puzzles, at the cost of one extra write each time someone opens a system. _Recommended: yes._
-2. **Play again:** keep the same crew and code (_recommended_), or send everyone back to the home screen?
-3. **Host powers:** only **Launch** and **Play again** (_recommended_, simple), or also **remove a player**?
+| Question             | Decision                                               |
+| -------------------- | ------------------------------------------------------ |
+| Show who's on what   | **Yes**: a name tag on each system card                |
+| Play again           | **Same crew, same code**, back to the lobby together   |
+| Host powers          | **Launch, Play again, and pause.** No removing players |
+| Pause in multiplayer | **Only the host can pause, and it pauses everyone**    |
