@@ -5,15 +5,16 @@
 
 ## Environment
 
-| Thing           | Value                                                                          |
-| --------------- | ------------------------------------------------------------------------------ |
-| Repo            | https://github.com/devrukhkarmansi/tp-escape (**public**)                      |
-| Node            | 22 (pinned in `package.json` `engines` and `.nvmrc`)                           |
-| Package manager | npm (already installed; one less tool to learn)                                |
-| Firebase        | project `tp-escape`, Firestore in `asia-south1`, Anonymous Auth on, Spark plan |
-| Hosting         | Vercel Hobby, project `tp-escape-deploy`, production branch `main`             |
-| Live site       | https://tp-escape-deploy.vercel.app (public; PR previews need a Vercel login)  |
-| Java            | 21, needed by the Firebase emulators (stage 3)                                 |
+| Thing           | Value                                                                                              |
+| --------------- | -------------------------------------------------------------------------------------------------- |
+| Repo            | https://github.com/devrukhkarmansi/tp-escape (**public**)                                          |
+| Node            | 22 (pinned in `package.json` `engines` and `.nvmrc`)                                               |
+| Package manager | npm (already installed; one less tool to learn)                                                    |
+| Firebase        | project `tp-escape`, Firestore in `asia-south1`, Anonymous Auth on, Spark plan                     |
+| Hosting         | Vercel Hobby, project `tp-escape-deploy`, production branch `main`                                 |
+| Live site       | https://tp-escape-deploy.vercel.app (public; PR previews need a Vercel login)                      |
+| Java            | 21, needed by the Firebase emulators (stage 3)                                                     |
+| Emulators       | Offline project `demo-tp-escape`; Auth on 9099, Firestore on 8180 (8080 is taken by a local nginx) |
 
 > **The repo is public.** Anyone can read the code and the commit history. Never commit secrets, and don't use an email in commits you don't want public (see "Commit identity").
 
@@ -87,12 +88,12 @@ Rule of thumb: add a library only when the need shows up in the code, not in adv
 
 ## Testing
 
-| Layer          | Tool                       | What we test                                                                                                               | When                                     |
-| -------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| Engine         | Vitest                     | Same seed → same puzzles. **For 1,000 random seeds, every generated puzzle's answer passes its own checker.** Scoring math | Stage 2 onward; the most important tests |
-| Security rules | Vitest + Firebase emulator | A player can't read another player's intel. Nobody can edit a room they're not in                                          | Stage 3–4                                |
-| UI             | Vitest + Testing Library   | Only components with real logic (e.g. the timer); no snapshot tests                                                        | As needed                                |
-| End-to-end     | Playwright                 | **Two browser windows as two phones:** host, join, solve, see it sync                                                      | Stage 3 onward                           |
+| Layer          | Tool                       | What we test                                                                                                                                            | When                                     |
+| -------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| Engine         | Vitest                     | Same seed → same puzzles. **For 1,000 random seeds, every generated puzzle's answer passes its own checker.** Scoring math                              | Stage 2 onward; the most important tests |
+| Security rules | Vitest + Firebase emulator | Rooms can't be listed; only crew members change a room; max 6 players; you only write your own player doc. `npm run test:rules`, also a separate CI job | From stage 3A                            |
+| UI             | Vitest + Testing Library   | Only components with real logic (e.g. the timer); no snapshot tests                                                                                     | As needed                                |
+| End-to-end     | Playwright                 | **Two browser windows as two phones:** host, join, solve, see it sync                                                                                   | Stage 3 onward                           |
 
 ## Git workflow
 

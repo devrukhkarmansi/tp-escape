@@ -1,0 +1,66 @@
+rules_version = '2';
+
+// Who can read and write what. Tested in tests/rules/ against the local emulator.
+// See docs/multiplayer.md for the data model these rules protect.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // 5 characters from the 31 that can't be confused: no 0/O, 1/I/L.
+    function isCrewCode(code) {
+      return code.matches('^[2-9A-HJKMNP-Z]{5}$');
+    }
+
+    function isValidName(name) {
+      return name is string && name.size() >= 1 && name.size() <= 16;
+    }
+
+    match /rooms/{code} {
+      // Anyone with the code can open the room, but rooms can never be listed or browsed.
+      allow get: if signedIn();
+      allow list: if false;
+
+      allow create: if signedIn()
+        && isCrewCode(code)
+        && request.resource.data.code == code
+        && request.resource.data.playerUids == [request.auth.uid]
+        && request.resource.data.status == 'lobby';
+
+      allow update: if signedIn() && (isMemberUpdate() || isJoining());
+
+      allow delete: if false;
+
+      // Crew members can change the game, but not who's in the crew or the room's code.
+      function isMemberUpdate() {
+        return request.auth.uid in resource.data.playerUids
+          && request.resource.data.playerUids == resource.data.playerUids
+          && request.resource.data.code == resource.data.code;
+      }
+
+      // Joining adds exactly yourself, touches nothing else, and stops at 6 players.
+      function isJoining() {
+        return !(request.auth.uid in resource.data.playerUids)
+          && request.resource.data.playerUids == resource.data.playerUids.concat([request.auth.uid])
+          && request.resource.data.playerUids.size() <= 6
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['playerUids']);
+      }
+
+      match /players/{uid} {
+        allow read: if signedIn();
+
+        // Only your own player doc, only if you're in the crew. getAfter() sees the room as it
+        // will be once this batch commits, so joining the room and creating your player doc can
+        // happen together in one atomic write.
+        allow create, update: if signedIn()
+          && request.auth.uid == uid
+          && isValidName(request.resource.data.name)
+          && request.auth.uid in getAfter(/databases/$(database)/documents/rooms/$(code)).data.playerUids;
+
+        allow delete: if false;
+      }
+    }
+  }
+}
