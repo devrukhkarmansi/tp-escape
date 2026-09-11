@@ -1,8 +1,8 @@
 # Story Outline — Space Station Theme
 
-**Status:** draft for review · **Last updated:** 2026-09-11
+**Status:** agreed · **Last updated:** 2026-09-11
 **Related:** [game-design.md](game-design.md) · [puzzle-system.md](puzzle-system.md)
-**Needed by:** stage 4 (story beats, twist, random-traitor finale). Stage 2 only uses the system names.
+**Built:** story beats, twist and endings (stage 4A: `src/engine/story.ts`, text in `src/content/space-station/index.ts`). **Next:** the random-traitor finale (4B).
 
 ## Premise
 

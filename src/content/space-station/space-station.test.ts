@@ -53,6 +53,32 @@ describe('space station content', () => {
       expect(spaceStation.flavor[kind]?.length, kind).toBeGreaterThan(0)
     }
   })
+
+  it('has 3 versions of every story moment, so replays read differently', () => {
+    const { story } = spaceStation
+    for (const beat of ['opening', 'newInfo', 'twist', 'emergency'] as const) {
+      expect(story[beat], beat).toHaveLength(3)
+    }
+    expect(story.won).toHaveLength(3)
+    expect(story.lost).toHaveLength(3)
+  })
+
+  it('keeps transmissions short enough to read on a phone mid-puzzle', () => {
+    const { story } = spaceStation
+    const transmissions = [...story.opening, ...story.newInfo, ...story.twist, ...story.emergency]
+    for (const t of transmissions) {
+      expect(t.lines.length, t.from).toBeLessThanOrEqual(3)
+      for (const line of t.lines) expect(line.length, line).toBeLessThanOrEqual(110)
+    }
+  })
+
+  it('only uses the {time} placeholder in openings, where the shift length is known', () => {
+    const { story } = spaceStation
+    for (const t of [...story.newInfo, ...story.twist, ...story.emergency]) {
+      expect(t.lines.join(' ')).not.toContain('{time}')
+    }
+    for (const t of story.opening) expect(t.lines.join(' ')).toContain('{time}')
+  })
 })
 
 describe.each(DIFFICULTIES.map((d) => [d.name, d] as const))(

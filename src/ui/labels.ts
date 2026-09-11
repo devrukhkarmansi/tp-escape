@@ -1,4 +1,12 @@
 import type { AlertLevel } from '../engine/game.ts'
+import type { StoryBeat } from '../engine/story.ts'
+
+export const BEAT_LABELS: Record<StoryBeat, string> = {
+  opening: 'Incoming transmission',
+  newInfo: 'Recovered crew log',
+  twist: 'Decrypted · priority',
+  emergency: 'Emergency broadcast',
+}
 
 const PUZZLE_KIND_LABELS: Record<string, string> = {
   caesar: 'Coded message',

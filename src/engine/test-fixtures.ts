@@ -34,6 +34,14 @@ export const testTheme: ThemePack = {
     { question: 'What has a neck but no head?', answer: 'bottle', hints: ['Drinks'] },
   ],
   flavor: {},
+  story: {
+    opening: [1, 2, 3].map((n) => ({ from: 'TEST', lines: [`Opening ${n}`] })),
+    newInfo: [1, 2, 3].map((n) => ({ from: 'TEST', lines: [`New info ${n}`] })),
+    twist: [1, 2, 3].map((n) => ({ from: 'TEST', lines: [`Twist ${n}`] })),
+    emergency: [1, 2, 3].map((n) => ({ from: 'TEST', lines: [`Emergency ${n}`] })),
+    won: ['Won 1', 'Won 2', 'Won 3'],
+    lost: ['Lost 1', 'Lost 2', 'Lost 3'],
+  },
 }
 
 /** Stand-in for real puzzle types: "type the number shown". */
