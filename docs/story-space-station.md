@@ -2,7 +2,9 @@
 
 **Status:** agreed · **Last updated:** 2026-09-11
 **Related:** [game-design.md](game-design.md) · [puzzle-system.md](puzzle-system.md)
-**Built:** story beats, twist and endings (stage 4A: `src/engine/story.ts`, text in `src/content/space-station/index.ts`). **Next:** the random-traitor finale (4B).
+**Built:** story beats, twist and endings (4A: `src/engine/story.ts`); the random-traitor finale with evidence cards and the Escape Pod (4B: `src/engine/mystery.ts`). All text lives in `src/content/space-station/index.ts`.
+
+> **As built, the finale asks for the traitor and the launch code.** What was taken and where it was hidden come out in the evidence and the debrief, but players don't have to name them. A wrong accusation costs 50 points and doesn't say which part was wrong.
 
 ## Premise
 

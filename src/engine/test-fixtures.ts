@@ -1,5 +1,5 @@
 import { DIFFICULTIES, type Difficulty, type DifficultyId } from './difficulty.ts'
-import { applyAction, createGame, type GameState, type NewGame } from './game.ts'
+import { applyAction, createGame, isFinale, type GameState, type NewGame } from './game.ts'
 import type { PuzzleGenerator } from './puzzle.ts'
 import type { ThemePack } from './theme.ts'
 
@@ -42,6 +42,20 @@ export const testTheme: ThemePack = {
     won: ['Won 1', 'Won 2', 'Won 3'],
     lost: ['Lost 1', 'Lost 2', 'Lost 3'],
   },
+  mystery: {
+    finaleSystemName: 'Escape Pod',
+    suspects: ['a', 'b', 'c', 'd', 'e'].map((id) => ({
+      id,
+      name: `Suspect ${id.toUpperCase()}`,
+      role: `Role ${id}`,
+    })),
+    items: ['the item one', 'the item two', 'the item three'],
+    places: ['in place one', 'in place two', 'in place three'],
+    alibis: ['{name} was elsewhere (alibi 1).', '{name} was asleep (alibi 2).'],
+    itemClues: ['Missing: {item}.'],
+    placeClues: ['Hidden {place}.'],
+    logs: Array.from({ length: 10 }, (_, i) => `Log ${i + 1} mentions {name}.`),
+  },
 }
 
 /** Stand-in for real puzzle types: "type the number shown". */
@@ -82,9 +96,23 @@ export function newTestGame(overrides: Partial<NewGame> = {}): GameState {
   })
 }
 
+/** Names the right traitor with the right launch code. */
+export function launchEscapePod(state: GameState, at = START + 1_000): GameState {
+  const escapePod = state.systems.find(isFinale)
+  if (!escapePod) throw new Error('No Escape Pod')
+  return applyAction(state, {
+    type: 'accuse',
+    suspectId: state.mystery.culpritId,
+    code: escapePod.puzzle.answer,
+    playerId: 'player-1',
+    at,
+  })
+}
+
 export function solve(state: GameState, systemId: string, at = START + 1_000): GameState {
   const system = state.systems.find((s) => s.id === systemId)
   if (!system) throw new Error(`No system ${systemId}`)
+  if (isFinale(system)) return launchEscapePod(state, at)
   return applyAction(state, {
     type: 'submit',
     systemId,

@@ -1,4 +1,4 @@
-import type { StationSystem, SystemStatus } from '../../engine/game.ts'
+import { isFinale, type StationSystem, type SystemStatus } from '../../engine/game.ts'
 import { playerColor } from '../crew-ui.ts'
 import { puzzleKindLabel } from '../labels.ts'
 
@@ -37,7 +37,11 @@ export default function SystemCard({ system, selected, onSelect, viewers = [] }:
       <span className="min-w-0">
         <span className="block truncate text-sm font-bold">{system.name}</span>
         <span className="font-display text-[11px] text-ink-muted">
-          {locked ? 'Restore another system to unlock' : puzzleKindLabel(system.puzzle.kind)}
+          {locked
+            ? isFinale(system)
+              ? 'Restore every system to unlock'
+              : 'Restore another system to unlock'
+            : puzzleKindLabel(system.puzzle.kind)}
         </span>
         {viewers.length > 0 && system.status === 'open' && (
           <span className="mt-1.5 flex flex-wrap gap-1">

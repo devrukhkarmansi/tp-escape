@@ -1,4 +1,5 @@
 import type { AlertLevel } from '../engine/game.ts'
+import type { EvidenceKind } from '../engine/mystery.ts'
 import type { StoryBeat } from '../engine/story.ts'
 
 export const BEAT_LABELS: Record<StoryBeat, string> = {
@@ -13,10 +14,18 @@ const PUZZLE_KIND_LABELS: Record<string, string> = {
   sequence: 'Number pattern',
   anagram: 'Scrambled word',
   riddle: 'Riddle',
+  finale: 'Launch sequence',
 }
 
 export function puzzleKindLabel(kind: string): string {
   return PUZZLE_KIND_LABELS[kind] ?? 'Puzzle'
+}
+
+export const EVIDENCE_LABELS: Record<EvidenceKind, { label: string; className: string }> = {
+  alibi: { label: 'Alibi', className: 'bg-nominal/15 text-nominal' },
+  item: { label: 'Inventory', className: 'bg-sky-400/15 text-sky-300' },
+  place: { label: 'Location', className: 'bg-violet-400/15 text-violet-300' },
+  log: { label: 'Station log', className: 'bg-ink-muted/15 text-ink-muted' },
 }
 
 /** Riddles are sentences; everything else is a code to stare at, so it gets big spaced mono. */

@@ -32,6 +32,16 @@ for (const [index, system] of game.systems.entries()) {
   console.log(`   ${puzzle.prompt}`)
   console.log(`   >> ${puzzle.display}`)
   puzzle.hints.forEach((hint, n) => console.log(`   hint ${n + 1}: ${hint}`))
-  console.log(`   answer: ${puzzle.answer}\n`)
+  console.log(`   answer: ${puzzle.answer}`)
+  const evidence = game.mystery.evidence[index]
+  if (evidence) console.log(`   evidence (${evidence.kind}): ${evidence.text}`)
+  console.log()
 }
+
+const nameOf = (id: string) => spaceStation.mystery.suspects.find((s) => s.id === id)?.name ?? id
+const { mystery } = game
+console.log(`Suspects: ${mystery.suspectIds.map(nameOf).join(', ')}`)
+console.log(
+  `Traitor:  ${nameOf(mystery.culpritId)} took ${mystery.item}, hidden ${mystery.place}\n`,
+)
 console.log(`Same game again: npm run sample -- ${seed} ${difficulty.id}\n`)

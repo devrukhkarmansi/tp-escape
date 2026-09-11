@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { checkAnswer, normalizeAnswer } from '../../engine/check-answer.ts'
 import { DIFFICULTIES } from '../../engine/difficulty.ts'
-import { createGame } from '../../engine/game.ts'
+import { createGame, isFinale } from '../../engine/game.ts'
 import { PUZZLE_GENERATORS } from '../../engine/puzzles/index.ts'
 import { solveEverything, START } from '../../engine/test-fixtures.ts'
 import { spaceStation } from './index.ts'
@@ -79,6 +79,28 @@ describe('space station content', () => {
     }
     for (const t of story.opening) expect(t.lines.join(' ')).toContain('{time}')
   })
+
+  it('has enough mystery text for the longest shift', () => {
+    const { mystery } = spaceStation
+    expect(new Set(mystery.suspects.map((s) => s.id)).size).toBe(mystery.suspects.length)
+    expect(mystery.suspects.length).toBeGreaterThanOrEqual(3)
+    // Every puzzle system reveals a card: 2 alibis, 1 item, 1 place, the rest logs.
+    expect(mystery.logs.length).toBeGreaterThanOrEqual(longestShift - 4)
+    expect(mystery.alibis.length).toBeGreaterThanOrEqual(2)
+  })
+
+  it('fills in the right blanks in each kind of clue', () => {
+    const { mystery } = spaceStation
+    for (const t of mystery.alibis) expect(t).toContain('{name}')
+    for (const t of mystery.itemClues) expect(t).toContain('{item}')
+    for (const t of mystery.placeClues) expect(t).toContain('{place}')
+  })
+
+  it('never lets a log line sound like an alibi, since only alibis may clear someone', () => {
+    for (const log of spaceStation.mystery.logs) {
+      expect(log).not.toMatch(/cleared|could not have|couldn't have|asleep|all night/i)
+    }
+  })
 })
 
 describe.each(DIFFICULTIES.map((d) => [d.name, d] as const))(
@@ -96,7 +118,9 @@ describe.each(DIFFICULTIES.map((d) => [d.name, d] as const))(
 
     it('never repeats an answer within a game, across 1,000 seeds', () => {
       const repeats = games.filter((game) => {
-        const answers = game.systems.map((s) => normalizeAnswer(s.puzzle.answer))
+        const answers = game.systems
+          .filter((s) => !isFinale(s))
+          .map((s) => normalizeAnswer(s.puzzle.answer))
         return new Set(answers).size !== answers.length
       })
       expect(repeats.map((g) => g.seed)).toEqual([])

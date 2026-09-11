@@ -1,16 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   alertLevel,
+  isFinale,
   isPaused,
   OPEN_AT_ONCE,
   timeLeftMs,
   type GameState,
+  type StationSystem,
 } from '../../engine/game.ts'
 import { beatsDue, transmissionFor, type StoryBeat } from '../../engine/story.ts'
 import type { Transmission } from '../../engine/theme.ts'
 import { isOnline, type Player } from '../../store/crew.ts'
 import type { GameStore } from '../../store/game-store.ts'
 import Backdrop from '../components/Backdrop.tsx'
+import EvidenceLog from '../components/EvidenceLog.tsx'
+import FinalePanel from '../components/FinalePanel.tsx'
 import GameHeader from '../components/GameHeader.tsx'
 import PausedPanel from '../components/PausedPanel.tsx'
 import SystemCard, { type Viewer } from '../components/SystemCard.tsx'
@@ -242,6 +246,7 @@ export default function GameScreen({
                 </li>
               ))}
             </ul>
+            <EvidenceLog cards={revealedEvidence(game)} total={game.mystery.evidence.length} />
             <TransmissionLog
               entries={due.map((beat) => ({ beat, transmission: storyText(game, beat) }))}
               onOpen={setReopened}
@@ -255,7 +260,21 @@ export default function GameScreen({
             </button>
           </nav>
 
-          {selected ? (
+          {selected && isFinale(selected) && selected.status === 'open' ? (
+            <FinalePanel
+              key={selected.id}
+              system={selected}
+              mystery={game.mystery}
+              suspects={THEME.mystery.suspects}
+              codeSystems={codeSystemsFor(game, selected)}
+              onOpenSystem={select}
+              onBack={() => select(null)}
+              onAccuse={(suspectId, code) =>
+                store.dispatch({ type: 'accuse', suspectId, code, playerId, at: clock() })
+              }
+              onHint={() => store.dispatch({ type: 'hint', systemId: selected.id, at: clock() })}
+            />
+          ) : selected ? (
             <SystemPanel
               key={selected.id}
               system={selected}
@@ -303,6 +322,27 @@ export default function GameScreen({
       )}
     </div>
   )
+}
+
+/** Evidence from restored systems, newest first. Card i belongs to system i (board order). */
+function revealedEvidence(game: GameState) {
+  return game.systems
+    .flatMap((system, index) => {
+      const card = game.mystery.evidence[index]
+      return card && !isFinale(system) && system.status === 'solved'
+        ? [{ id: system.id, systemName: system.name, card, at: system.solvedAt ?? 0 }]
+        : []
+    })
+    .sort((a, b) => b.at - a.at)
+}
+
+/** The systems named in the launch code, in code order. */
+function codeSystemsFor(game: GameState, escapePod: StationSystem) {
+  const names = escapePod.puzzle.display?.split('  ·  ') ?? []
+  return names.flatMap((name) => {
+    const system = game.systems.find((s) => s.name === name)
+    return system ? [{ id: system.id, name, restored: system.status === 'solved' }] : []
+  })
 }
 
 /** This game's version of a story moment, with `{time}` filled in as the shift length. */
