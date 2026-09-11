@@ -5,6 +5,8 @@ export type Puzzle = {
   id: string
   kind: string
   prompt: string
+  /** The thing to work on (coded message, number series), shown large and monospaced. */
+  display?: string
   answer: string
   altAnswers?: readonly string[]
   /** Revealed one at a time, easiest nudge first. */

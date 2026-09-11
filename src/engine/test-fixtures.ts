@@ -9,6 +9,31 @@ export const testTheme: ThemePack = {
   id: 'test',
   name: 'Test Station',
   systemNames: Array.from({ length: 12 }, (_, i) => `System ${i + 1}`),
+  words: [
+    'CRYO',
+    'HULL',
+    'FUEL',
+    'CARGO',
+    'ORBIT',
+    'RADAR',
+    'OXYGEN',
+    'PLANET',
+    'ROCKET',
+    'AIRLOCK',
+    'REACTOR',
+    'GRAVITY',
+    'ASTEROID',
+    'THRUSTER',
+    'SATELLITE',
+    'TELESCOPE',
+  ],
+  riddles: [
+    { question: 'What has a face and two hands?', answer: 'clock', hints: ['It ticks'] },
+    { question: 'What gets wetter as it dries?', answer: 'towel', hints: ['Bathroom'] },
+    { question: 'What has one eye but cannot see?', answer: 'needle', hints: ['Sewing'] },
+    { question: 'What has a neck but no head?', answer: 'bottle', hints: ['Drinks'] },
+  ],
+  flavor: {},
 }
 
 /** Stand-in for real puzzle types: "type the number shown". */
