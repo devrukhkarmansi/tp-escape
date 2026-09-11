@@ -302,4 +302,46 @@ export const spaceStation: ThemePack = {
       'The module is quiet again. Next relief crew arriving in 72 hours.',
     ],
   },
+
+  // The finale. Each game picks 3 of these 5 as suspects, one as the traitor.
+  mystery: {
+    finaleSystemName: 'Escape Pod',
+    suspects: [
+      { id: 'okafor', name: 'Cmdr. Ines Okafor', role: 'Station commander' },
+      { id: 'kessler', name: 'Dr. Tomas Kessler', role: 'Systems engineer' },
+      { id: 'nair', name: 'Priya Nair', role: 'Communications' },
+      { id: 'park', name: 'Jun Park', role: 'Medic' },
+      { id: 'volkov', name: 'Sasha Volkov', role: 'Cargo and supply' },
+    ],
+    items: ["the relay's encryption core", 'a sealed cryo sample', "HALCYON's black-box log"],
+    places: ['in cargo crate 7', 'inside a cryo pod', 'inside the escape pod itself'],
+    // Every alibi must clear its suspect beyond doubt: the finale is solved by elimination.
+    alibis: [
+      'Comms log: {name} was on a call to Earth from 03:30 to 04:10. They could not have signed the purge order.',
+      'Med bay camera: {name} slept in their bunk from midnight to 06:00. Cleared.',
+      "{name}'s badge never left the hydroponics bay after midnight, nowhere near the order console. Cleared.",
+      'Gym log: {name} was on the treadmill from 03:00 to 04:30, heart-rate strap on. Cleared.',
+    ],
+    itemClues: [
+      'Inventory check: {item} is missing.',
+      'Vault seal broken at 03:52. Only one thing was taken: {item}.',
+    ],
+    placeClues: [
+      'Power trace: an unregistered device is drawing current {place}.',
+      'Maintenance drone report: a seal was cut and resealed {place}.',
+    ],
+    // Atmosphere and red herrings. They may name anyone, but never clear anyone.
+    logs: [
+      "{name}'s last log entry: 'Something's wrong with HALCYON.'",
+      'The purge order was signed at 03:47, station time.',
+      'Someone wiped the airlock cameras between 03:40 and 04:00.',
+      '{name} asked to transfer off Kepler-9 last month. Request denied.',
+      'A coffee cup, still warm, was left beside the order console.',
+      'The Mayday was sent from a handheld, not the comms console.',
+      "HALCYON: 'I followed the order. It carried valid crew credentials.'",
+      "Three hours of the crew's chat log are missing.",
+      'Cargo manifest edited at 03:55. The author field is blank.',
+      '{name} was seen near the cargo hold after lights-out.',
+    ],
+  },
 }

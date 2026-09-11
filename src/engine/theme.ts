@@ -23,6 +23,24 @@ export type ThemeStory = {
   lost: readonly string[]
 }
 
+export type Suspect = { id: string; name: string; role: string }
+
+/** What the finale is built from. Text templates use {name}, {item} and {place}. */
+export type ThemeMystery = {
+  finaleSystemName: string
+  suspects: readonly Suspect[]
+  items: readonly string[]
+  places: readonly string[]
+  /** Each one clears a single innocent suspect, clearly: {name}. */
+  alibis: readonly string[]
+  /** Reveal what was taken: {item}. */
+  itemClues: readonly string[]
+  /** Reveal where it's hidden: {place}. */
+  placeClues: readonly string[]
+  /** Atmosphere and red herrings. May mention any suspect ({name}), but must never clear anyone. */
+  logs: readonly string[]
+}
+
 export type ThemePack = {
   id: string
   name: string
@@ -34,4 +52,5 @@ export type ThemePack = {
   /** Short in-world lead-ins per puzzle kind, e.g. "Reactor pressure readings". */
   flavor: Readonly<Record<string, readonly string[]>>
   story: ThemeStory
+  mystery: ThemeMystery
 }
