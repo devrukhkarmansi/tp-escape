@@ -35,7 +35,7 @@ It started as a Claude Artifact (see the original session export). This repo is 
 1. **One central mystery.** Every puzzle feeds a story: the previous crew vanished and the module purges when the timer hits zero.
 2. **Parallel, not linear.** 3–4 systems are open at once so nobody just watches one phone.
 3. **Split information.** Some players get private intel that others need, so the crew has to talk.
-4. **Timed story beats.** New info at ~20:00, a twist at ~10:00, emergency mode at ~5:00 (scaled to the difficulty).
+4. **Timed story beats.** New info with ¾ of the time left, the twist at half, emergency mode at a quarter. Fractions scale with every shift length; see [story-space-station.md](story-space-station.md#story-beats).
 5. **A twist.** The objective gets reframed partway through.
 6. **Score + awards.** Time left, systems solved, hints, teamwork bonus; awards like Mastermind, Eagle Eye, Comms MVP.
 7. **Co-op, no losers.** The crew plays against the clock, not against each other.
@@ -130,4 +130,4 @@ Each stage ends with something playable, and each one teaches something new.
 
 ## Still to write (content, not code)
 
-- The story outline for the space station: what happened, the suspects, the twist, the story beats. Needed by stage 4; can be written alongside stages 1–3.
+- The story outline for the space station: what happened, the suspects, the twist, the story beats. Needed by stage 4. **Draft:** [story-space-station.md](story-space-station.md)
