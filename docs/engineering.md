@@ -106,12 +106,12 @@ feature/…  ── PR, squash ──►  develop  ── release PR, merge comm
 - **Every PR, even working solo**, gets:
   - CI checks (GitHub Actions: typecheck, lint, format, test, build)
   - a **Vercel preview URL**, a live copy of that branch you can open on your phone before merging
-- **How to merge:**
+- **How to merge** (GitHub enforces both, so the button only offers the right one):
   - work branch → `develop`: **squash**, so each task becomes one tidy commit
-  - `develop` → `main`: **merge commit, never squash.** Squashing here would give `main` different commits from `develop`, and the next release PR would show old changes again or conflict.
-  - `main` → `develop` (back-merge): **merge commit**
-- **Hotfix** (something broken on the live site): branch `fix/…` from `main`, PR it into `main`, then open a back-merge PR from `main` into `develop` so the two don't drift apart.
-- **If a release is ever squashed by mistake** (it happened once, in #2): open a PR from `main` into `develop` and merge it with a merge commit (#3). That brings the histories back together without changing any files.
+  - `develop` → `main`: **merge commit, never squash.** Squashing here gives `main` different commits from `develop`, and the next release PR shows old changes again or conflicts.
+- **Nothing flows back from `main` into `develop`.** Because `main` only ever receives release merges, `develop` always already has everything `main` has.
+- **Hotfix** (something broken on the live site): fix it on a `fix/…` branch into `develop` as usual, then open a release PR straight away. One path for every change keeps the branches from drifting apart.
+- **History note:** the stage 1 release (#2) and the attempted back-merge (#3) were both squashed, which left the branches with no shared commit, and the next release would have conflicted. #5 fixed it with an "ours" merge (`git merge -s ours main`): it records `main` as merged into `develop` without changing any files. The rules below now make that mistake impossible.
 - **Commit messages:** a light form of Conventional Commits: `feat: add caesar generator`, `fix: timer drift on lock screen`, `docs: …`, `chore: …`.
 - **The one exception:** the very first commit (docs only) went straight to `main`, because a PR needs an existing branch to merge into.
 
@@ -119,10 +119,10 @@ feature/…  ── PR, squash ──►  develop  ── release PR, merge comm
 
 Set up as **rulesets** under the repo's Settings → Rules → Rulesets, so the merge button only offers what's allowed:
 
-| Branch    | Changes only via | CI (`check`) must pass | Allowed merge styles                                      | Force-push / delete |
-| --------- | ---------------- | ---------------------- | --------------------------------------------------------- | ------------------- |
-| `main`    | Pull request     | Yes                    | Merge commit only                                         | Blocked             |
-| `develop` | Pull request     | Yes                    | Squash (features) or merge commit (back-merges from main) | Blocked             |
+| Branch    | Changes only via | CI (`check`) must pass | Allowed merge style | Force-push / delete |
+| --------- | ---------------- | ---------------------- | ------------------- | ------------------- |
+| `main`    | Pull request     | Yes                    | Merge commit only   | Blocked             |
+| `develop` | Pull request     | Yes                    | Squash only         | Blocked             |
 
 Finished work branches are **deleted automatically** after their PR merges. No approving review is required, since a solo author can't approve their own PR.
 
