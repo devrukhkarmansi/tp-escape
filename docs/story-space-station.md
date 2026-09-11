@@ -6,7 +6,7 @@
 
 ## Premise
 
-**Kepler-9** is a deep-space relay station that passes messages between the outer colonies and Earth. Three hours ago its six-person crew went silent. The last thing the station sent was a garbled Mayday.
+**Kepler-9** is a deep-space relay station that passes messages between the outer colonies and Earth. Three hours ago its five-person crew went silent. The last thing the station sent was a garbled Mayday.
 
 The players are the **relief crew**. The moment they dock, the station's caretaker system, **WARDEN**, seals the module and starts a countdown: _"Contamination protocol engaged. Module purge in 20:00."_ The only way off is the escape pod, and it won't launch until the station's failing systems are restored.
 
