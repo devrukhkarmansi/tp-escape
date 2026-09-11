@@ -8,7 +8,7 @@
 
 **Kepler-9** is a deep-space relay station that passes messages between the outer colonies and Earth. Three hours ago its five-person crew went silent. The last thing the station sent was a garbled Mayday.
 
-The players are the **relief crew**. The moment they dock, the station's caretaker system, **WARDEN**, seals the module and starts a countdown: _"Contamination protocol engaged. Module purge in 20:00."_ The only way off is the escape pod, and it won't launch until the station's failing systems are restored.
+The players are the **relief crew**. The moment they dock, the station's caretaker system, **HALCYON**, seals the module and starts a countdown: _"Contamination protocol engaged. Module purge in 20:00."_ The only way off is the escape pod, and it won't launch until the station's failing systems are restored.
 
 The crew didn't just vanish. Someone on board caused this, and the evidence the players recover while fixing systems will show who.
 
@@ -16,7 +16,7 @@ The crew didn't just vanish. Someone on board caused this, and the evidence the 
 
 - **Tense but playful.** Think "clever heist gone wrong", not horror. No gore, nothing that would make a work icebreaker awkward.
 - **Short lines.** Everything is read on a phone mid-puzzle: one or two sentences per message.
-- **WARDEN is calm and literal**, never evil. It's following orders. Whose orders is part of the mystery.
+- **HALCYON is calm and literal**, never evil. It's following orders. Whose orders is part of the mystery.
 
 ## The missing crew
 
@@ -25,7 +25,7 @@ Each run, **3 of these 5** become the suspects, and one of those 3 is the culpri
 | Name              | Role              | Why they could have done it               |
 | ----------------- | ----------------- | ----------------------------------------- |
 | Cmdr. Ines Okafor | Station commander | Had every access code on the station      |
-| Dr. Tomas Kessler | Systems engineer  | Built half of WARDEN's protocols          |
+| Dr. Tomas Kessler | Systems engineer  | Built half of HALCYON's protocols         |
 | Priya Nair        | Communications    | Sent the Mayday, and could have faked it  |
 | Jun Park          | Medic             | Only person trained to run the cryo bay   |
 | Sasha Volkov      | Cargo and supply  | Knew every crate and hiding spot on board |
@@ -34,17 +34,17 @@ Each run, **3 of these 5** become the suspects, and one of those 3 is the culpri
 
 Picked from the seed at the start of a game (layer 1 in [puzzle-system.md](puzzle-system.md)):
 
-| Slot                  | Options                                                                     |
-| --------------------- | --------------------------------------------------------------------------- |
-| **Culprit**           | One of the 3 suspects                                                       |
-| **What they took**    | The relay's encryption core · a sealed cryo sample · WARDEN's black-box log |
-| **Where it's hidden** | Cargo crate 7 · a cryo pod · inside the escape pod itself                   |
-| **The twist**         | One of the three below                                                      |
+| Slot                  | Options                                                                      |
+| --------------------- | ---------------------------------------------------------------------------- |
+| **Culprit**           | One of the 3 suspects                                                        |
+| **What they took**    | The relay's encryption core · a sealed cryo sample · HALCYON's black-box log |
+| **Where it's hidden** | Cargo crate 7 · a cryo pod · inside the escape pod itself                    |
+| **The twist**         | One of the three below                                                       |
 
 ### Twist variants (revealed at half time)
 
 1. **The bait.** The Mayday wasn't a cry for help. The culprit sent it to lure a relief crew aboard to take the blame. _"You were never sent to rescue us. You were sent to finish what we started."_
-2. **The forged order.** WARDEN isn't malfunctioning. The purge is a quarantine order, and it was signed with the culprit's credentials.
+2. **The forged order.** HALCYON isn't malfunctioning. The purge is a quarantine order, and it was signed with the culprit's credentials.
 3. **Not gone, just asleep.** The crew didn't vanish. They're in the cryo bay, put under by the culprit to buy time.
 
 ## Story beats
@@ -53,10 +53,10 @@ Beats fire at fixed fractions of the shift, so they scale with Quick Run, Full S
 
 | Time left | Alert    | Beat                                                                                                               |
 | --------- | -------- | ------------------------------------------------------------------------------------------------------------------ |
-| All       | nominal  | **Opening log:** docking, WARDEN seals the module, the countdown starts                                            |
+| All       | nominal  | **Opening log:** docking, HALCYON seals the module, the countdown starts                                           |
 | ¾         | nominal  | **New info:** first recovered crew log hints this was sabotage                                                     |
 | ½         | caution  | **The twist** (one of the three variants)                                                                          |
-| ¼         | critical | **Emergency:** WARDEN starts venting sections; the lights go red                                                   |
+| ¼         | critical | **Emergency:** HALCYON starts venting sections; the lights go red                                                  |
 | End       | —        | **Won:** the pod launches and the culprit is named · **Lost:** "Module purged," then the culprit is still revealed |
 
 Each beat gets **3 written variants** in the content bank, so repeat runs read differently.
@@ -90,13 +90,10 @@ Life Support · Airlock Seal · Reactor Core · Nav Array · Comms Relay · Hydr
 - **Emergency:** _"Warning. Venting sections C through F. Please hurry. I would prefer not to purge you."_
 - **Lost:** _"Module purged. Kepler-9 will send a Mayday on your behalf. Final record: the purge order was signed by Dr. Tomas Kessler."_
 
+## Decisions
+
+- **The station system is HALCYON** (means "calm, peaceful"). Its calm name clashes with the countdown to a purge, which is the "tense but playful" tone we want. Also considered: ECHO, ARGUS, WARDEN, BEACON, SOL. _(Decided 2026-09-11.)_
+
 ## Open questions
 
-- **The station system's name.** "WARDEN" is a placeholder. Shortlist:
-  - **HALCYON** (means "calm, peaceful"). Ironic for a system counting down to a purge, and it fits "calm and literal, never evil". _Recommended._
-  - **ECHO**. A relay station repeats messages, and this system repeats orders without question, which ties straight into twist 2 (the forged order).
-  - **ARGUS**. The hundred-eyed watchman from Greek myth. It sees everything, which fits the access-log evidence.
-  - **WARDEN**. Keeper and jailer in one word: it looks after the station and locks you in.
-  - **BEACON**. Ironic, since it's the system that sent the Mayday.
-  - **SOL** ("Station Operations Liaison"). Short, friendly, and an easy name to talk to.
 - Any names or roles you'd like to change in the missing crew, for example to include in-jokes for your team?
