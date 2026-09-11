@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { DIFFICULTIES, type DifficultyId } from '../../engine/difficulty.ts'
+import Backdrop from '../components/Backdrop.tsx'
 
 const BRIEFING = [
   '1–6 crew, on any phone or laptop',
@@ -7,13 +8,14 @@ const BRIEFING = [
   'No accounts, just a crew code',
 ]
 
-export default function HomeScreen() {
+type Props = { onPlaySolo: (difficultyId: DifficultyId) => void }
+
+export default function HomeScreen({ onPlaySolo }: Props) {
   const [shift, setShift] = useState<DifficultyId>('full')
 
   return (
-    <div className="relative isolate min-h-dvh overflow-hidden">
-      <div aria-hidden className="absolute inset-0 -z-10 bg-console-glow" />
-      <div aria-hidden className="absolute inset-0 -z-10 bg-console-grid opacity-60" />
+    <div className="relative isolate min-h-dvh">
+      <Backdrop />
 
       <main className="mx-auto flex min-h-dvh w-full max-w-sm flex-col gap-10 px-5 pt-16 pb-10 lg:grid lg:max-w-5xl lg:grid-cols-[1.15fr_1fr] lg:items-center lg:gap-20 lg:px-10 lg:py-16">
         <header className="text-center lg:text-left">
@@ -77,20 +79,29 @@ export default function HomeScreen() {
           <div className="mt-auto flex flex-col gap-3 lg:mt-0">
             <button
               type="button"
-              disabled
-              className="min-h-12 rounded-xl bg-nominal text-sm font-bold text-void disabled:cursor-not-allowed disabled:opacity-40"
+              onClick={() => onPlaySolo(shift)}
+              className="min-h-12 rounded-xl bg-nominal text-sm font-bold text-void hover:brightness-110"
             >
-              Host a crew
+              Play solo
             </button>
-            <button
-              type="button"
-              disabled
-              className="min-h-12 rounded-xl border border-line text-sm font-bold disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Join with code
-            </button>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                disabled
+                className="min-h-12 rounded-xl border border-line text-sm font-bold disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Host a crew
+              </button>
+              <button
+                type="button"
+                disabled
+                className="min-h-12 rounded-xl border border-line text-sm font-bold disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Join with code
+              </button>
+            </div>
             <p className="text-center font-display text-[11px] text-ink-muted">
-              Crew systems come online in the next update.
+              Crew play for 1–6 players comes online in the next update.
             </p>
           </div>
         </section>
