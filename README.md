@@ -33,15 +33,25 @@ Add a seed and shift length to get a specific game again, e.g. `npm run sample -
 
 ## Scripts
 
-| Command          | What it does                                                          |
-| ---------------- | --------------------------------------------------------------------- |
-| `npm run dev`    | Local dev server with hot reload                                      |
-| `npm run build`  | Typecheck and build for production into `dist/`                       |
-| `npm test`       | Run the tests once (`npm run test:watch` to re-run on save)           |
-| `npm run sample` | Print a generated game with answers (`-- [seed] [quick\|full\|deep]`) |
-| `npm run lint`   | oxlint, including the engine → store → ui import-order rule           |
-| `npm run format` | Format everything with Prettier                                       |
-| `npm run check`  | Everything CI runs except the build: types, lint, format, tests       |
+| Command                | What it does                                                          |
+| ---------------------- | --------------------------------------------------------------------- |
+| `npm run dev`          | Local dev server with hot reload                                      |
+| `npm run build`        | Typecheck and build for production into `dist/`                       |
+| `npm test`             | Run the tests once (`npm run test:watch` to re-run on save)           |
+| `npm run sample`       | Print a generated game with answers (`-- [seed] [quick\|full\|deep]`) |
+| `npm run lint`         | oxlint, including the engine → store → ui import-order rule           |
+| `npm run format`       | Format everything with Prettier                                       |
+| `npm run check`        | Everything CI runs except the build: types, lint, format, tests       |
+| `npm run test:rules`   | Security-rule tests against the local Firestore emulator (needs Java) |
+| `npm run emulators`    | Run the Firebase Auth and Firestore emulators locally                 |
+| `npm run deploy:rules` | Publish `firestore.rules` to the real Firebase project                |
+
+## Firebase (multiplayer)
+
+Solo play needs nothing. Multiplayer needs Firebase, either the real project or local emulators:
+
+- **Real project:** copy `.env.example` to `.env.local` and fill in the Firebase web config.
+- **Local emulators** (no account, no real data): run `npm run emulators` in one terminal, then `VITE_USE_EMULATORS=true npm run dev` in another. The emulators use the offline project `demo-tp-escape`: Auth on port 9099, Firestore on 8180.
 
 ## Branches
 
