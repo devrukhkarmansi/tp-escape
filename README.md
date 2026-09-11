@@ -1,6 +1,8 @@
 # Mayday Protocol
 
-A real-time co-op escape room for 1–6 players, played from a shared link on any phone. Host a crew, split the intel, and get off the station before the module purges.
+A real-time co-op escape room for 1–6 players, played from a shared link on any phone or laptop. Host a crew, split the intel, and get off the station before the module purges.
+
+**Live:** https://tp-escape-deploy.vercel.app
 
 - Design: [docs/game-design.md](docs/game-design.md)
 - Puzzles: [docs/puzzle-system.md](docs/puzzle-system.md)

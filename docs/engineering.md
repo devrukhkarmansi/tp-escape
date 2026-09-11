@@ -11,7 +11,8 @@
 | Node            | 22 (pinned in `package.json` `engines` and `.nvmrc`)                           |
 | Package manager | npm (already installed; one less tool to learn)                                |
 | Firebase        | project `tp-escape`, Firestore in `asia-south1`, Anonymous Auth on, Spark plan |
-| Hosting         | Vercel Hobby, connected to the repo                                            |
+| Hosting         | Vercel Hobby, project `tp-escape-deploy`, production branch `main`             |
+| Live site       | https://tp-escape-deploy.vercel.app (public; PR previews need a Vercel login)  |
 | Java            | 21, needed by the Firebase emulators (stage 3)                                 |
 
 > **The repo is public.** Anyone can read the code and the commit history. Never commit secrets, and don't use an email in commits you don't want public (see "Commit identity").
@@ -108,9 +109,22 @@ feature/…  ── PR, squash ──►  develop  ── release PR, merge comm
 - **How to merge:**
   - work branch → `develop`: **squash**, so each task becomes one tidy commit
   - `develop` → `main`: **merge commit, never squash.** Squashing here would give `main` different commits from `develop`, and the next release PR would show old changes again or conflict.
-- **Hotfix** (something broken on the live site): branch `fix/…` from `main`, PR it into `main`, then merge `main` back into `develop` so the two don't drift apart.
+  - `main` → `develop` (back-merge): **merge commit**
+- **Hotfix** (something broken on the live site): branch `fix/…` from `main`, PR it into `main`, then open a back-merge PR from `main` into `develop` so the two don't drift apart.
+- **If a release is ever squashed by mistake** (it happened once, in #2): open a PR from `main` into `develop` and merge it with a merge commit (#3). That brings the histories back together without changing any files.
 - **Commit messages:** a light form of Conventional Commits: `feat: add caesar generator`, `fix: timer drift on lock screen`, `docs: …`, `chore: …`.
 - **The one exception:** the very first commit (docs only) went straight to `main`, because a PR needs an existing branch to merge into.
+
+### Branch rules (enforced by GitHub)
+
+Set up as **rulesets** under the repo's Settings → Rules → Rulesets, so the merge button only offers what's allowed:
+
+| Branch    | Changes only via | CI (`check`) must pass | Allowed merge styles                                      | Force-push / delete |
+| --------- | ---------------- | ---------------------- | --------------------------------------------------------- | ------------------- |
+| `main`    | Pull request     | Yes                    | Merge commit only                                         | Blocked             |
+| `develop` | Pull request     | Yes                    | Squash (features) or merge commit (back-merges from main) | Blocked             |
+
+Finished work branches are **deleted automatically** after their PR merges. No approving review is required, since a solo author can't approve their own PR.
 
 ### Commit identity
 
@@ -134,20 +148,22 @@ Recommended on GitHub too: **Settings → Emails** → tick **Keep my email addr
 - [ ] Checked on a phone-width screen (the Vercel preview on a real phone is best)
 - [ ] Docs updated if a decision changed
 
-## Stage 1 — pipeline (the first thing we build)
+## Stage 1 — pipeline ✅ done 2026-09-11
 
 **Goal:** pushing to GitHub updates a live URL, and every PR gets checks and a preview link. No game logic yet.
 
-1. `git init`, repo-only commit email, `.gitignore`, `.nvmrc`
-2. Scaffold Vite + React + TypeScript into this folder (keeping `docs/`)
-3. Tailwind v4 with the prototype's colors and fonts as theme tokens
-4. Strict TypeScript, oxlint (with the import-direction rule), Prettier
-5. Vitest with one real test (the seeded RNG is a good first one)
-6. GitHub Actions CI workflow
-7. A static Home screen (title, Host / Join buttons that don't do anything yet)
-8. README: how to run locally
-9. Push → import the repo in Vercel → **first live URL**
-10. Open a small follow-up PR to see the preview URL and CI checks work end to end
+- [x] `git init`, repo-only commit email, `.gitignore`, `.nvmrc`
+- [x] Scaffold Vite + React + TypeScript into this folder (keeping `docs/`)
+- [x] Tailwind v4 with the prototype's colors and fonts as theme tokens
+- [x] Strict TypeScript, oxlint (with the import-direction rule), Prettier
+- [x] Vitest with one real test (the seeded RNG)
+- [x] GitHub Actions CI workflow
+- [x] A static Home screen for phone and laptop (Host / Join disabled until stage 2)
+- [x] README: how to run locally
+- [x] Vercel connected → **live at https://tp-escape-deploy.vercel.app** (#1, released in #2)
+- [x] Branch rules and auto-delete set up on GitHub
+
+Lesson learned: Vercel's import flow can create a _copy_ of the repo instead of linking the real one. If previews never appear, check **Vercel → Settings → Git** shows `devrukhkarmansi/tp-escape`.
 
 ## How we work together
 
