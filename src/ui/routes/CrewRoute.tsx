@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import { signIn } from '../../firebase/app.ts'
+import { isCrewPlayAvailable } from '../../firebase/configured.ts'
 import { createCrewStore } from '../../store/crew-store.ts'
 import {
   electHost,
@@ -56,7 +57,7 @@ export default function CrewRoute() {
 
   // Sign in, then follow the room and its players live.
   useEffect(() => {
-    if (!isCrewCode(code)) return
+    if (!isCrewCode(code) || !isCrewPlayAvailable()) return
     let stopped = false
     const unsubscribes: Array<() => void> = []
     signIn().then((id) => {
@@ -166,6 +167,14 @@ export default function CrewRoute() {
     }
   }
 
+  if (!isCrewPlayAvailable()) {
+    return (
+      <Notice
+        title="Crew play isn't switched on here yet"
+        body="This site isn't connected to Firebase yet. You can still play solo from the home screen."
+      />
+    )
+  }
   if (error) return <Notice title="Lost contact with the station" body={error} />
   if (!isCrewCode(code) || room === null) {
     return (

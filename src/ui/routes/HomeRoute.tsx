@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
+import { isCrewPlayAvailable } from '../../firebase/configured.ts'
 import type { GameStore } from '../../store/game-store.ts'
 import { rememberName } from '../crew-ui.ts'
 import GameScreen from '../screens/GameScreen.tsx'
@@ -14,6 +15,7 @@ export default function HomeRoute() {
   if (!store) {
     return (
       <HomeScreen
+        crewAvailable={isCrewPlayAvailable()}
         onPlaySolo={(difficultyId) => setStore(startSoloGame(difficultyId))}
         onHost={async (name, difficultyId) => {
           rememberName(name)

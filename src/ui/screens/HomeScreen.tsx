@@ -15,6 +15,8 @@ type Props = {
   /** Creates a crew and moves to its lobby. Rejects with a message if it can't. */
   onHost: (name: string, difficultyId: DifficultyId) => Promise<void>
   onJoin: (code: string, name: string) => void
+  /** False until this site has Firebase configured; crew buttons stay disabled until then. */
+  crewAvailable: boolean
 }
 
 type Mode = 'menu' | 'host' | 'join'
@@ -27,7 +29,7 @@ const primary =
 const secondary =
   'min-h-12 rounded-xl border border-line text-sm font-bold hover:border-ink-muted/60'
 
-export default function HomeScreen({ onPlaySolo, onHost, onJoin }: Props) {
+export default function HomeScreen({ onPlaySolo, onHost, onJoin, crewAvailable }: Props) {
   const [shift, setShift] = useState<DifficultyId>('full')
   const [mode, setMode] = useState<Mode>('menu')
   const [name, setName] = useState(rememberedName)
@@ -148,13 +150,28 @@ export default function HomeScreen({ onPlaySolo, onHost, onJoin }: Props) {
                 Play solo
               </button>
               <div className="grid grid-cols-2 gap-3">
-                <button type="button" onClick={() => switchMode('host')} className={secondary}>
+                <button
+                  type="button"
+                  onClick={() => switchMode('host')}
+                  disabled={!crewAvailable}
+                  className={`${secondary} disabled:cursor-not-allowed disabled:opacity-40`}
+                >
                   Host a crew
                 </button>
-                <button type="button" onClick={() => switchMode('join')} className={secondary}>
+                <button
+                  type="button"
+                  onClick={() => switchMode('join')}
+                  disabled={!crewAvailable}
+                  className={`${secondary} disabled:cursor-not-allowed disabled:opacity-40`}
+                >
                   Join with code
                 </button>
               </div>
+              {!crewAvailable && (
+                <p className="text-center font-display text-[11px] text-ink-muted">
+                  Crew play isn't switched on for this site yet.
+                </p>
+              )}
             </div>
           )}
 
