@@ -1,0 +1,46 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript", "oxc"],
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/only-export-components": ["warn", { "allowConstantExport": true }]
+  },
+  "overrides": [
+    {
+      "files": ["src/engine/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "regex": "^(react|react-dom|firebase)(/|$)",
+                "message": "engine/ is pure game logic: no React or Firebase."
+              },
+              {
+                "regex": "(^|/)(store|ui|firebase)(/|$)",
+                "message": "engine/ must not import from store/, ui/ or firebase/. Dependencies point inward: ui -> store -> engine."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/store/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "regex": "(^|/)ui(/|$)",
+                "message": "store/ must not import from ui/. Dependencies point inward: ui -> store -> engine."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

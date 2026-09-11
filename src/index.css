@@ -1,0 +1,56 @@
+@import 'tailwindcss';
+
+/* Palette from the prototype. Alert tiers are named by meaning (nominal / caution / critical), not hue. */
+@theme {
+  --color-void: #0a0e16;
+  --color-panel: #121a29;
+  --color-panel-raised: #182339;
+  --color-line: #26324a;
+  --color-ink: #dfe6f2;
+  --color-ink-muted: #7d8bab;
+  --color-nominal: #2fe6c8;
+  --color-nominal-dim: #1a8f7d;
+  --color-caution: #f5a623;
+  --color-critical: #ff4f5e;
+
+  --font-display: 'Space Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --font-sans: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+@utility bg-console-glow {
+  background-image: radial-gradient(
+    ellipse 70% 55% at 50% -5%,
+    color-mix(in oklab, var(--color-nominal) 13%, transparent),
+    transparent 70%
+  );
+}
+
+@utility bg-console-grid {
+  background-image:
+    linear-gradient(
+      to right,
+      color-mix(in oklab, var(--color-line) 55%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--color-line) 55%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 75% 65% at 50% 40%, black 30%, transparent 80%);
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-void font-sans text-ink antialiased;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-nominal;
+  }
+}
