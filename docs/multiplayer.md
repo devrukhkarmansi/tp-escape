@@ -95,23 +95,26 @@ A 6-player, 10-minute Full Shift is roughly a few hundred writes and a couple of
 
 ## PRs
 
-| PR     | What                                                                                                          | What you'd learn                           |
-| ------ | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
-| **3A** | Firebase foundation: SDK, config from env, anonymous sign-in, local emulators, security rules and their tests | Env config, auth, rules as code, emulators |
-| **3B** | Rooms and lobby: routes, host / join, crew codes, names, presence, lobby screen, share link                   | Transactions, live listeners, routing      |
-| **3C** | Shared game: `FirestoreStore`, launch, live board, "restored by" toasts, debrief per player, play again       | Sync design, clock skew                    |
-| **3D** | Two-phone test: Playwright opens two browsers against the emulator and plays a game together                  | End-to-end testing of real-time features   |
+| PR                 | What                                                                                                          | What you'd learn                                               |
+| ------------------ | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| **3A** ✅ #13      | Firebase foundation: SDK, config from env, anonymous sign-in, local emulators, security rules and their tests | Env config, auth, rules as code, emulators                     |
+| **3B + 3C** ✅ #14 | Rooms, lobby, share links, presence, the shared live game, name tags, toasts, host pause, another round       | Transactions, live listeners, routing, sync design, clock skew |
+| **3D**             | Two-phone test: Playwright opens two browsers against the emulator and plays a game together                  | End-to-end testing of real-time features                       |
 
-Then a release PR, and multiplayer is live.
+Released to the live site in #15 (2026-09-11). Crew play there stays switched off until the steps below are done.
 
-## What you'll need to do (before 3A)
+## Switching crew play on for the live site
 
-These involve your accounts and keys, so they're yours:
+| Step                                                                                                                            | Who                                     | Status        |
+| ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- | ------------- |
+| Publish `firestore.rules` to project `tp-escape` (`npm run deploy:rules`; `.firebaserc` points at it)                           | Claude, after your `npx firebase login` | ✅ 2026-09-11 |
+| **Vercel → Settings → Environment Variables**: the six `VITE_FIREBASE_*` values from `.env.example`, for Production and Preview | You                                     |               |
+| **Redeploy** in Vercel (the values are baked in when the site is built)                                                         | You                                     |               |
+| **Firebase → Authentication → Settings → Authorized domains**: add `tp-escape-deploy.vercel.app`                                | You                                     |               |
 
-1. **`.env.local`:** 3A adds a `.env.example` template. Copy it to `.env.local` and paste in the values from the `firebaseConfig` you saved.
-2. **Vercel:** add the same values under **Settings → Environment Variables**, so the live site can reach Firebase.
-3. **Firebase CLI login:** run `npx firebase login` once, after 3A adds the CLI. It's needed to run the emulators and publish security rules.
-4. **Authorized domain:** Firebase console → **Authentication → Settings → Authorized domains** → add `tp-escape-deploy.vercel.app`.
+Locally, `.env.local` holds the same values; without it, `npm run dev:crew` uses the emulators instead.
+
+**Whenever `firestore.rules` changes**, publish it again with `npm run deploy:rules`, after the change is merged to `main`.
 
 ## Decisions (agreed 2026-09-11)
 
