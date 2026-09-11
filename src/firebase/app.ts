@@ -1,6 +1,13 @@
 import { initializeApp, type FirebaseApp } from 'firebase/app'
-import { connectAuthEmulator, getAuth, signInAnonymously, type Auth } from 'firebase/auth'
-import { connectFirestoreEmulator, getFirestore, type Firestore } from 'firebase/firestore'
+import {
+  browserSessionPersistence,
+  connectAuthEmulator,
+  indexedDBLocalPersistence,
+  initializeAuth,
+  signInAnonymously,
+  type Auth,
+} from 'firebase/auth'
+import { connectFirestoreEmulator, initializeFirestore, type Firestore } from 'firebase/firestore'
 
 // Must start with "demo-": the emulators then run fully offline, with no login or real project.
 export const EMULATOR_PROJECT_ID = 'demo-tp-escape'
@@ -42,8 +49,14 @@ export function firebase(): Services {
   if (services) return services
 
   const app = initializeApp(firebaseConfig())
-  const auth = getAuth(app)
-  const db = getFirestore(app)
+  // Real players keep their identity across tabs and restarts, so they can always rejoin.
+  // With emulators, each tab gets its own identity: open three tabs and you have a crew of three.
+  const auth = initializeAuth(app, {
+    persistence: useEmulators ? browserSessionPersistence : indexedDBLocalPersistence,
+  })
+  // Optional fields (e.g. a riddle with no alternative answers) can be undefined; Firestore
+  // rejects undefined values unless told to skip them.
+  const db = initializeFirestore(app, { ignoreUndefinedProperties: true })
   if (useEmulators) {
     const host = window.location.hostname
     connectAuthEmulator(auth, `http://${host}:${AUTH_EMULATOR_PORT}`, { disableWarnings: true })
@@ -52,6 +65,10 @@ export function firebase(): Services {
 
   services = { app, auth, db }
   return services
+}
+
+export function isUsingEmulators(): boolean {
+  return useEmulators
 }
 
 /** Signs this browser in anonymously. The same uid comes back after reloads, so rejoining works. */
