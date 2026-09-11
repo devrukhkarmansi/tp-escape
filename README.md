@@ -33,15 +33,39 @@ Add a seed and shift length to get a specific game again, e.g. `npm run sample -
 
 ## Scripts
 
-| Command          | What it does                                                          |
-| ---------------- | --------------------------------------------------------------------- |
-| `npm run dev`    | Local dev server with hot reload                                      |
-| `npm run build`  | Typecheck and build for production into `dist/`                       |
-| `npm test`       | Run the tests once (`npm run test:watch` to re-run on save)           |
-| `npm run sample` | Print a generated game with answers (`-- [seed] [quick\|full\|deep]`) |
-| `npm run lint`   | oxlint, including the engine → store → ui import-order rule           |
-| `npm run format` | Format everything with Prettier                                       |
-| `npm run check`  | Everything CI runs except the build: types, lint, format, tests       |
+| Command                | What it does                                                               |
+| ---------------------- | -------------------------------------------------------------------------- |
+| `npm run dev`          | Local dev server with hot reload                                           |
+| `npm run build`        | Typecheck and build for production into `dist/`                            |
+| `npm test`             | Run the tests once (`npm run test:watch` to re-run on save)                |
+| `npm run sample`       | Print a generated game with answers (`-- [seed] [quick\|full\|deep]`)      |
+| `npm run lint`         | oxlint, including the engine → store → ui import-order rule                |
+| `npm run format`       | Format everything with Prettier                                            |
+| `npm run check`        | Everything CI runs except the build: types, lint, format, tests            |
+| `npm run test:rules`   | Security-rule tests against the local Firestore emulator (needs Java)      |
+| `npm run dev:crew`     | **Multiplayer locally:** emulators + dev server on your Wi-Fi, one command |
+| `npm run emulators`    | Run the Firebase Auth and Firestore emulators on their own                 |
+| `npm run deploy:rules` | Publish `firestore.rules` to the real Firebase project                     |
+
+## Firebase (multiplayer)
+
+Solo play needs nothing. Multiplayer needs Firebase, either local emulators or the real project.
+
+### Try multiplayer locally (no account, no real data)
+
+```bash
+npm run dev:crew
+```
+
+- **Several players on one laptop:** in emulator mode every browser tab is a separate player. Host in one tab, open the crew link in another.
+- **Phones:** open the "Network" address it prints (e.g. `http://192.168.x.x:5173`) on the laptop **and** on phones on the same Wi-Fi. Opening it on the laptop too means the share link shows that address instead of `localhost`. If macOS asks whether to allow incoming connections for `node` or `java`, allow them.
+- Crews live in memory and disappear when you stop it (`Ctrl+C`).
+
+The emulators use the offline project `demo-tp-escape`: Auth on port 9099, Firestore on 8180.
+
+### Real project
+
+Copy `.env.example` to `.env.local` and fill in the Firebase web config, then `npm run dev`.
 
 ## Branches
 

@@ -16,6 +16,18 @@
   --font-display: 'Space Mono', ui-monospace, 'SF Mono', Menlo, monospace;
   --font-sans: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
+  /* One soft pulse per second: well under the 3-flashes-a-second limit for seizure safety. */
+  --animate-emergency: emergency 1s ease-in-out infinite;
+  @keyframes emergency {
+    0%,
+    100% {
+      opacity: 0.2;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
   --animate-shake: shake 0.4s ease-in-out;
   @keyframes shake {
     0%,
@@ -48,6 +60,15 @@
     transparent 70%
   );
   transition: background-image 1s ease;
+}
+
+/* Red light creeping in from the screen edges during the final minute. */
+@utility bg-emergency-vignette {
+  background-image: radial-gradient(
+    ellipse 90% 80% at 50% 50%,
+    transparent 40%,
+    color-mix(in oklab, var(--color-critical) 40%, transparent) 100%
+  );
 }
 
 @utility bg-console-grid {

@@ -27,7 +27,11 @@ export type GameState = {
   difficultyId: DifficultyId
   themeId: string
   startedAt: number
+  /** Shift length. Stays fixed; `endsAt` moves later each time the game resumes from a pause. */
+  durationMs: number
   endsAt: number
+  /** Set while paused. Absent (never undefined) otherwise, because Firestore rejects undefined. */
+  pausedAt?: number
   status: GameStatus
   endedAt?: number
   systems: readonly StationSystem[]
@@ -39,6 +43,8 @@ export type GameAction =
   | { type: 'submit'; systemId: string; answer: string; playerId: string; at: number }
   | { type: 'hint'; systemId: string; at: number }
   | { type: 'tick'; at: number }
+  | { type: 'pause'; at: number }
+  | { type: 'resume'; at: number }
 
 export type NewGame = {
   seed: number
@@ -82,12 +88,14 @@ export function createGame({ seed, difficulty, theme, generators, startedAt }: N
     }
   })
 
+  const durationMs = difficulty.minutes * 60_000
   return {
     seed,
     difficultyId: difficulty.id,
     themeId: theme.id,
     startedAt,
-    endsAt: startedAt + difficulty.minutes * 60_000,
+    durationMs,
+    endsAt: startedAt + durationMs,
     status: 'playing',
     systems,
   }
@@ -130,16 +138,31 @@ function spreadGenerators(
  */
 export function applyAction(state: GameState, action: GameAction): GameState {
   if (state.status !== 'playing') return state
+
+  // While paused the clock is frozen and only "resume" does anything.
+  if (state.pausedAt !== undefined) {
+    if (action.type !== 'resume') return state
+    const { pausedAt, ...running } = state
+    return { ...running, endsAt: state.endsAt + Math.max(0, action.at - pausedAt) }
+  }
+
   if (action.at >= state.endsAt) return { ...state, status: 'lost', endedAt: state.endsAt }
 
   switch (action.type) {
     case 'tick':
+    case 'resume':
       return state
+    case 'pause':
+      return { ...state, pausedAt: action.at }
     case 'hint':
       return revealHint(state, action.systemId)
     case 'submit':
       return submitAnswer(state, action)
   }
+}
+
+export function isPaused(state: GameState): boolean {
+  return state.pausedAt !== undefined
 }
 
 function revealHint(state: GameState, systemId: string): GameState {
@@ -179,16 +202,16 @@ function withSystem(
   }
 }
 
-/** Milliseconds left on the clock. Freezes when the game ends. */
+/** Milliseconds left on the clock. Freezes while paused and when the game ends. */
 export function timeLeftMs(state: GameState, now: number): number {
-  return Math.max(0, state.endsAt - (state.endedAt ?? now))
+  return Math.max(0, state.endsAt - (state.endedAt ?? state.pausedAt ?? now))
 }
 
 export type AlertLevel = 'nominal' | 'caution' | 'critical'
 
 /** Station alert tier: caution with half the time left, critical with a quarter left. */
 export function alertLevel(state: GameState, now: number): AlertLevel {
-  const fractionLeft = timeLeftMs(state, now) / (state.endsAt - state.startedAt)
+  const fractionLeft = timeLeftMs(state, now) / state.durationMs
   if (fractionLeft > 0.5) return 'nominal'
   if (fractionLeft > 0.25) return 'caution'
   return 'critical'

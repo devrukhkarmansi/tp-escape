@@ -5,9 +5,28 @@ import { formatClock, formatPoints } from '../format.ts'
 import { puzzleKindLabel } from '../labels.ts'
 import { THEME } from '../solo-game.ts'
 
-type Props = { game: GameState; onPlayAgain: () => void; onHome: () => void }
+type Props = {
+  game: GameState
+  onPlayAgain: () => void
+  onHome: () => void
+  /** Solo: always. Crew: only the host starts the next round. */
+  canPlayAgain: boolean
+  /** Crew only: shown to everyone who's waiting on the host. */
+  hostName?: string
+  /** Crew only: turns a player id into a name, for "restored by". */
+  solverName?: (playerId: string | undefined) => string
+  homeLabel: string
+}
 
-export default function DebriefScreen({ game, onPlayAgain, onHome }: Props) {
+export default function DebriefScreen({
+  game,
+  onPlayAgain,
+  onHome,
+  canPlayAgain,
+  hostName,
+  solverName,
+  homeLabel,
+}: Props) {
   const won = game.status === 'won'
   const score = scoreGame(game)
   const total = game.systems.length
@@ -57,19 +76,25 @@ export default function DebriefScreen({ game, onPlayAgain, onHome }: Props) {
           </dl>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={onPlayAgain}
-              className="min-h-12 rounded-xl bg-nominal px-6 text-sm font-bold text-void sm:flex-1"
-            >
-              Play again
-            </button>
+            {canPlayAgain ? (
+              <button
+                type="button"
+                onClick={onPlayAgain}
+                className="min-h-12 rounded-xl bg-nominal px-6 text-sm font-bold text-void sm:flex-1"
+              >
+                {solverName ? 'Another round, same crew' : 'Play again'}
+              </button>
+            ) : (
+              <p className="flex min-h-12 items-center justify-center rounded-xl border border-dashed border-line px-6 text-center font-display text-xs text-ink-muted sm:flex-1">
+                Waiting for {hostName ?? 'the host'} to start another round…
+              </p>
+            )}
             <button
               type="button"
               onClick={onHome}
               className="min-h-12 rounded-xl border border-line px-6 text-sm font-bold hover:border-ink-muted/60 sm:flex-1"
             >
-              Back to home
+              {homeLabel}
             </button>
           </div>
         </section>
@@ -94,6 +119,12 @@ export default function DebriefScreen({ game, onPlayAgain, onHome }: Props) {
                     <p className="font-display text-[11px] text-ink-muted">
                       {puzzleKindLabel(system.puzzle.kind)} · answer{' '}
                       <span className="text-ink">{system.puzzle.answer}</span>
+                      {restored && solverName && (
+                        <>
+                          {' '}
+                          · by <span className="text-ink">{solverName(system.solvedBy)}</span>
+                        </>
+                      )}
                     </p>
                   </div>
                   <span

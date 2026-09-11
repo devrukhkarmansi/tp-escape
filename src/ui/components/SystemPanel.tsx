@@ -9,11 +9,13 @@ type Props = {
   onSubmit: (answer: string) => void
   onHint: () => void
   onBack: () => void
+  /** Crew only: who restored this system. */
+  solverName?: string
 }
 
 const HINT_COST = Math.abs(POINTS.perHint)
 
-export default function SystemPanel({ system, onSubmit, onHint, onBack }: Props) {
+export default function SystemPanel({ system, onSubmit, onHint, onBack, solverName }: Props) {
   const [answer, setAnswer] = useState('')
   const [wrong, setWrong] = useState(false)
   const [shaking, setShaking] = useState(false)
@@ -73,7 +75,9 @@ export default function SystemPanel({ system, onSubmit, onHint, onBack }: Props)
 
       {solved ? (
         <div role="status" className="rounded-xl border border-nominal/50 bg-nominal/10 p-5">
-          <p className="font-display text-sm font-bold text-nominal">✓ {system.name} restored</p>
+          <p className="font-display text-sm font-bold text-nominal">
+            ✓ {system.name} restored{solverName ? ` by ${solverName}` : ''}
+          </p>
           <p className="mt-2 text-sm text-ink-muted">
             Answer: <span className="font-display text-ink">{puzzle.answer}</span>
           </p>
