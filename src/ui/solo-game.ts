@@ -13,16 +13,20 @@ function randomSeed(): number {
   return crypto.getRandomValues(new Uint32Array(1))[0]!
 }
 
-export function startSoloGame(difficultyId: DifficultyId): GameStore {
+/** A fresh game with the current theme and puzzle types. Used by solo play and crew launches. */
+export function newGame(difficultyId: DifficultyId, startedAt: number): GameState {
   const difficulty = DIFFICULTIES.find((d) => d.id === difficultyId) ?? DIFFICULTIES[1]!
-  const game = createGame({
+  return createGame({
     seed: randomSeed(),
     difficulty,
     theme: THEME,
     generators: PUZZLE_GENERATORS,
-    startedAt: Date.now(),
+    startedAt,
   })
-  return soloStore(game)
+}
+
+export function startSoloGame(difficultyId: DifficultyId): GameStore {
+  return soloStore(newGame(difficultyId, Date.now()))
 }
 
 /** A game left running before the page reloaded, if it's still playable. */

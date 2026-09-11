@@ -18,6 +18,7 @@
     "test:watch": "vitest",
     "sample": "node --experimental-strip-types --no-warnings scripts/sample-game.ts",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm test",
+    "dev:crew": "VITE_USE_EMULATORS=true firebase emulators:exec --only auth,firestore --project demo-tp-escape \"vite --host --port 5173 --strictPort\"",
     "emulators": "firebase emulators:start --only auth,firestore --project demo-tp-escape",
     "test:rules": "firebase emulators:exec --only firestore --project demo-tp-escape \"vitest run --config vitest.rules.config.ts\"",
     "deploy:rules": "firebase deploy --only firestore:rules"
@@ -25,7 +26,8 @@
   "dependencies": {
     "firebase": "^12.19.0",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "react-router": "^7.18.3"
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^5.0.2",

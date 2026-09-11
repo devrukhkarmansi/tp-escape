@@ -1,30 +1,64 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { alertLevel, isPaused, OPEN_AT_ONCE, timeLeftMs } from '../../engine/game.ts'
+import { isOnline, type Player } from '../../store/crew.ts'
 import type { GameStore } from '../../store/game-store.ts'
 import Backdrop from '../components/Backdrop.tsx'
 import GameHeader from '../components/GameHeader.tsx'
 import PausedPanel from '../components/PausedPanel.tsx'
-import SystemCard from '../components/SystemCard.tsx'
+import SystemCard, { type Viewer } from '../components/SystemCard.tsx'
 import SystemPanel from '../components/SystemPanel.tsx'
+import Toast from '../components/Toast.tsx'
 import { useGame } from '../hooks/use-game.ts'
 import { useNow } from '../hooks/use-now.ts'
 import { useSoundSetting } from '../hooks/use-sound-setting.ts'
-import { SOLO_PLAYER_ID, THEME } from '../solo-game.ts'
+import { THEME } from '../solo-game.ts'
 import { playTick, playTimeUp } from '../sound.ts'
 import DebriefScreen from './DebriefScreen.tsx'
 
 const FINAL_MINUTE_MS = 60_000
 const URGENT_SECONDS = 10
 
-type Props = { store: GameStore; onPlayAgain: () => void; onExit: () => void }
+/** What a crew game adds on top of solo play. */
+export type CrewSession = {
+  players: readonly Player[]
+  hostId: string | null
+  onView: (systemId: string | null) => void
+}
 
-export default function GameScreen({ store, onPlayAgain, onExit }: Props) {
+type Props = {
+  store: GameStore
+  playerId: string
+  /** Solo uses this device's clock; a crew uses Firestore's, so every timer matches. */
+  clock?: () => number
+  crew?: CrewSession
+  onPlayAgain: () => void
+  onExit: () => void
+}
+
+export default function GameScreen({
+  store,
+  playerId,
+  clock = Date.now,
+  crew,
+  onPlayAgain,
+  onExit,
+}: Props) {
   const game = useGame(store)
   const playing = game.status === 'playing'
   const paused = isPaused(game)
-  const now = useNow(playing ? 250 : null)
+  const now = useNow(playing ? 250 : null, clock)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [soundOn, setSoundOn] = useSoundSetting()
+  const [toasts, setToasts] = useState<{ id: string; text: string }[]>([])
+  const dismissToast = useCallback(
+    (id: string) => setToasts((current) => current.filter((t) => t.id !== id)),
+    [],
+  )
+
+  const isHost = !crew || crew.hostId === playerId
+  const hostName = crew?.players.find((p) => p.id === crew.hostId)?.name
+  const nameOf = (id: string | undefined) =>
+    crew?.players.find((p) => p.id === id)?.name ?? 'A teammate'
 
   const timeLeft = timeLeftMs(game, now)
   const secondsLeft = Math.ceil(timeLeft / 1000)
@@ -47,23 +81,71 @@ export default function GameScreen({ store, onPlayAgain, onExit }: Props) {
     previousStatus.current = game.status
   }, [game.status, soundOn])
 
-  if (!playing) return <DebriefScreen game={game} onPlayAgain={onPlayAgain} onHome={onExit} />
+  // In a crew, say when a teammate restores a system.
+  const seenSolved = useRef(
+    new Set(game.systems.filter((s) => s.status === 'solved').map((s) => s.id)),
+  )
+  useEffect(() => {
+    const newlySolved = game.systems.filter(
+      (s) => s.status === 'solved' && !seenSolved.current.has(s.id),
+    )
+    for (const system of newlySolved) seenSolved.current.add(system.id)
+    if (!crew) return
+    const byOthers = newlySolved.filter((s) => s.solvedBy && s.solvedBy !== playerId)
+    if (byOthers.length === 0) return
+    const names = new Map(crew.players.map((p) => [p.id, p.name]))
+    setToasts((current) => [
+      ...current,
+      ...byOthers.map((s) => ({
+        id: `${s.id}-${s.solvedAt}`,
+        text: `${names.get(s.solvedBy!) ?? 'A teammate'} restored ${s.name}`,
+      })),
+    ])
+  }, [game.systems, crew, playerId])
+
+  if (!playing) {
+    return (
+      <DebriefScreen
+        game={game}
+        onPlayAgain={onPlayAgain}
+        onHome={onExit}
+        canPlayAgain={isHost}
+        hostName={hostName}
+        solverName={crew ? nameOf : undefined}
+        homeLabel={crew ? 'Leave crew' : 'Back to home'}
+      />
+    )
+  }
 
   const level = alertLevel(game, now)
   const selected = game.systems.find((s) => s.id === selectedId)
   const solved = game.systems.filter((s) => s.status === 'solved').length
 
+  const viewersBySystem = new Map<string, Viewer[]>()
+  for (const player of crew?.players ?? []) {
+    if (player.id === playerId || !player.viewing || !isOnline(player, now)) continue
+    const list = viewersBySystem.get(player.viewing) ?? []
+    list.push({ id: player.id, name: player.name, color: player.color })
+    viewersBySystem.set(player.viewing, list)
+  }
+
   function select(id: string | null) {
     setSelectedId(id)
+    crew?.onView(id)
     window.scrollTo({ top: 0 })
   }
 
   function togglePause() {
-    store.dispatch({ type: paused ? 'resume' : 'pause', at: Date.now() })
+    if (!isHost) return
+    store.dispatch({ type: paused ? 'resume' : 'pause', at: clock() })
   }
 
-  function abandon() {
-    if (window.confirm('Abandon this mission? This game will be lost.')) onExit()
+  const exitLabel = crew ? 'Leave crew' : 'Abandon mission'
+  function exit() {
+    const question = crew
+      ? 'Leave the crew? The game carries on without you, and you can come back with the same link.'
+      : 'Abandon this mission? This game will be lost.'
+    if (window.confirm(question)) onExit()
   }
 
   return (
@@ -82,13 +164,21 @@ export default function GameScreen({ store, onPlayAgain, onExit }: Props) {
         solved={solved}
         total={game.systems.length}
         paused={paused}
+        canPause={isHost}
         onTogglePause={togglePause}
         soundOn={soundOn}
         onToggleSound={() => setSoundOn(!soundOn)}
       />
 
       {paused ? (
-        <PausedPanel timeLeft={timeLeft} onResume={togglePause} onAbandon={abandon} />
+        <PausedPanel
+          timeLeft={timeLeft}
+          canResume={isHost}
+          hostName={crew ? hostName : undefined}
+          onResume={togglePause}
+          onExit={exit}
+          exitLabel={exitLabel}
+        />
       ) : (
         <main className="mx-auto w-full max-w-6xl px-5 pt-6 pb-12 lg:grid lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start lg:gap-8 lg:px-8 lg:pt-8">
           {finalMinute && (
@@ -112,16 +202,17 @@ export default function GameScreen({ store, onPlayAgain, onExit }: Props) {
                     system={system}
                     selected={system.id === selectedId}
                     onSelect={() => select(system.id)}
+                    viewers={viewersBySystem.get(system.id)}
                   />
                 </li>
               ))}
             </ul>
             <button
               type="button"
-              onClick={abandon}
+              onClick={exit}
               className="mt-6 min-h-11 font-display text-xs text-ink-muted underline-offset-4 hover:text-critical hover:underline"
             >
-              Abandon mission
+              {exitLabel}
             </button>
           </nav>
 
@@ -129,17 +220,18 @@ export default function GameScreen({ store, onPlayAgain, onExit }: Props) {
             <SystemPanel
               key={selected.id}
               system={selected}
+              solverName={crew && selected.solvedBy ? nameOf(selected.solvedBy) : undefined}
               onBack={() => select(null)}
               onSubmit={(answer) =>
                 store.dispatch({
                   type: 'submit',
                   systemId: selected.id,
                   answer,
-                  playerId: SOLO_PLAYER_ID,
-                  at: Date.now(),
+                  playerId,
+                  at: clock(),
                 })
               }
-              onHint={() => store.dispatch({ type: 'hint', systemId: selected.id, at: Date.now() })}
+              onHint={() => store.dispatch({ type: 'hint', systemId: selected.id, at: clock() })}
             />
           ) : (
             <div className="hidden min-h-80 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-line p-8 text-center lg:flex">
@@ -152,6 +244,15 @@ export default function GameScreen({ store, onPlayAgain, onExit }: Props) {
           )}
         </main>
       )}
+
+      <div
+        aria-live="polite"
+        className="pointer-events-none fixed inset-x-0 bottom-4 z-30 flex flex-col items-center gap-2 px-4"
+      >
+        {toasts.map((toast) => (
+          <Toast key={toast.id} id={toast.id} text={toast.text} onDone={dismissToast} />
+        ))}
+      </div>
     </div>
   )
 }

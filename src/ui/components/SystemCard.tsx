@@ -1,4 +1,5 @@
 import type { StationSystem, SystemStatus } from '../../engine/game.ts'
+import { playerColor } from '../crew-ui.ts'
 import { puzzleKindLabel } from '../labels.ts'
 
 const STATUS_TAG: Record<SystemStatus, { text: string; className: string }> = {
@@ -7,9 +8,17 @@ const STATUS_TAG: Record<SystemStatus, { text: string; className: string }> = {
   locked: { text: 'Locked', className: 'bg-ink-muted/15 text-ink-muted' },
 }
 
-type Props = { system: StationSystem; selected: boolean; onSelect: () => void }
+export type Viewer = { id: string; name: string; color: number }
 
-export default function SystemCard({ system, selected, onSelect }: Props) {
+type Props = {
+  system: StationSystem
+  selected: boolean
+  onSelect: () => void
+  /** Teammates who have this system open right now (multiplayer only). */
+  viewers?: readonly Viewer[]
+}
+
+export default function SystemCard({ system, selected, onSelect, viewers = [] }: Props) {
   const tag = STATUS_TAG[system.status]
   const locked = system.status === 'locked'
 
@@ -30,6 +39,19 @@ export default function SystemCard({ system, selected, onSelect }: Props) {
         <span className="font-display text-[11px] text-ink-muted">
           {locked ? 'Restore another system to unlock' : puzzleKindLabel(system.puzzle.kind)}
         </span>
+        {viewers.length > 0 && system.status === 'open' && (
+          <span className="mt-1.5 flex flex-wrap gap-1">
+            {viewers.map((viewer) => (
+              <span
+                key={viewer.id}
+                className={`rounded px-1.5 py-0.5 font-display text-[10px] ${playerColor(viewer.color).tag}`}
+              >
+                {viewer.name}
+              </span>
+            ))}
+            <span className="sr-only">{viewers.length === 1 ? 'is' : 'are'} working on this</span>
+          </span>
+        )}
       </span>
       <span
         className={`shrink-0 rounded-md px-2 py-1 font-display text-[10px] tracking-[0.08em] uppercase ${tag.className}`}

@@ -10,6 +10,8 @@ type Props = {
   solved: number
   total: number
   paused: boolean
+  /** Solo: always. Crew: only the host, and it pauses everyone. */
+  canPause: boolean
   onTogglePause: () => void
   soundOn: boolean
   onToggleSound: () => void
@@ -25,6 +27,7 @@ export default function GameHeader({
   solved,
   total,
   paused,
+  canPause,
   onTogglePause,
   soundOn,
   onToggleSound,
@@ -56,14 +59,16 @@ export default function GameHeader({
           >
             {formatClock(timeLeft)}
           </p>
-          <button
-            type="button"
-            onClick={onTogglePause}
-            aria-label={paused ? 'Resume game' : 'Pause game'}
-            className={iconButton}
-          >
-            {paused ? <PlayIcon /> : <PauseIcon />}
-          </button>
+          {canPause && (
+            <button
+              type="button"
+              onClick={onTogglePause}
+              aria-label={paused ? 'Resume game' : 'Pause game'}
+              className={iconButton}
+            >
+              {paused ? <PlayIcon /> : <PauseIcon />}
+            </button>
+          )}
           <button
             type="button"
             onClick={onToggleSound}
