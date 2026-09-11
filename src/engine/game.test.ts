@@ -1,0 +1,206 @@
+import { describe, expect, it } from 'vitest'
+import { alertLevel, applyAction, OPEN_AT_ONCE, timeLeftMs } from './game.ts'
+import type { PuzzleGenerator } from './puzzle.ts'
+import {
+  difficulty,
+  newTestGame,
+  numberGenerator,
+  solve,
+  solveEverything,
+  START,
+  testTheme,
+} from './test-fixtures.ts'
+
+const MINUTE = 60_000
+
+describe('createGame', () => {
+  it('builds the same game from the same seed', () => {
+    expect(newTestGame({ seed: 7 })).toEqual(newTestGame({ seed: 7 }))
+  })
+
+  it('builds a different game from a different seed', () => {
+    const answers = (seed: number) => newTestGame({ seed }).systems.map((s) => s.puzzle.answer)
+    expect(answers(1)).not.toEqual(answers(2))
+  })
+
+  it.each(['quick', 'full', 'deep'] as const)(
+    '%s: one system per slot, the first few open',
+    (id) => {
+      const tier = difficulty(id)
+      const game = newTestGame({ difficulty: tier })
+      expect(game.systems).toHaveLength(tier.systems)
+      expect(game.systems.filter((s) => s.status === 'open')).toHaveLength(OPEN_AT_ONCE)
+      expect(new Set(game.systems.map((s) => s.name)).size).toBe(tier.systems)
+      expect(game.endsAt - game.startedAt).toBe(tier.minutes * MINUTE)
+    },
+  )
+
+  it('uses every puzzle type before repeating one', () => {
+    const game = newTestGame({ difficulty: difficulty('quick') })
+    const kinds = game.systems.map((s) => s.puzzle.kind)
+    expect(new Set(kinds.slice(0, 3)).size).toBe(3)
+  })
+
+  it('ramps level from 0 on the first system to 1 on the last', () => {
+    const levels: number[] = []
+    const spy: PuzzleGenerator = {
+      kind: 'spy',
+      generate: (rng, { level }) => {
+        levels.push(level)
+        return numberGenerator('spy').generate(rng, { level, theme: testTheme })
+      },
+    }
+    newTestGame({ generators: [spy], difficulty: difficulty('quick') })
+    expect(levels).toEqual([0, 0.25, 0.5, 0.75, 1])
+  })
+
+  it("gives each puzzle its own seed, so one puzzle type can't shift another's puzzles", () => {
+    const steady = numberGenerator('steady')
+    const greedy = (draws: number): PuzzleGenerator => ({
+      kind: 'greedy',
+      generate: (rng, context) => {
+        for (let i = 0; i < draws; i++) rng.next()
+        return numberGenerator('greedy').generate(rng, context)
+      },
+    })
+    const steadyAnswers = (draws: number) =>
+      newTestGame({ generators: [steady, greedy(draws)], difficulty: difficulty('deep') })
+        .systems.filter((s) => s.puzzle.kind === 'steady')
+        .map((s) => s.puzzle.answer)
+
+    expect(steadyAnswers(1)).toEqual(steadyAnswers(100))
+  })
+
+  it('never repeats an answer within a game', () => {
+    const tiny: PuzzleGenerator = {
+      kind: 'tiny',
+      generate: (rng) => {
+        const n = rng.int(1, 10)
+        return { prompt: `Enter ${n}`, answer: String(n), hints: ['A number'] }
+      },
+    }
+    for (let seed = 0; seed < 200; seed++) {
+      const answers = newTestGame({ seed, generators: [tiny] }).systems.map((s) => s.puzzle.answer)
+      expect(new Set(answers).size).toBe(answers.length)
+    }
+  })
+
+  it('refuses a theme with too few systems for the shift', () => {
+    const tiny = { ...testTheme, systemNames: ['Only one'] }
+    expect(() => newTestGame({ theme: tiny })).toThrow(/needs 5/)
+  })
+
+  it('refuses to start with no puzzle types', () => {
+    expect(() => newTestGame({ generators: [] })).toThrow()
+  })
+})
+
+describe('applyAction: answers', () => {
+  it('counts a wrong answer and keeps the system open', () => {
+    const game = newTestGame()
+    const next = applyAction(game, {
+      type: 'submit',
+      systemId: 'system-0',
+      answer: 'definitely wrong',
+      playerId: 'player-1',
+      at: START + 1_000,
+    })
+    expect(next.systems[0]).toMatchObject({ status: 'open', wrongAttempts: 1 })
+  })
+
+  it('solves on the right answer, credits the player, and opens the next locked system', () => {
+    const game = newTestGame()
+    const next = solve(game, 'system-1', START + 5_000)
+    expect(next.systems[1]).toMatchObject({
+      status: 'solved',
+      solvedBy: 'player-1',
+      solvedAt: START + 5_000,
+    })
+    expect(next.systems[OPEN_AT_ONCE]!.status).toBe('open')
+    expect(next.systems.filter((s) => s.status === 'open')).toHaveLength(OPEN_AT_ONCE)
+  })
+
+  it('ignores answers for locked or already-solved systems', () => {
+    const game = newTestGame()
+    const locked = game.systems.find((s) => s.status === 'locked')!
+    expect(solve(game, locked.id)).toBe(game)
+
+    const solvedOnce = solve(game, 'system-0')
+    expect(solve(solvedOnce, 'system-0')).toBe(solvedOnce)
+  })
+
+  it('wins when the last system is solved', () => {
+    const won = solveEverything(newTestGame(), START + 2 * MINUTE)
+    expect(won.status).toBe('won')
+    expect(won.endedAt).toBe(START + 2 * MINUTE)
+    expect(won.systems.every((s) => s.status === 'solved')).toBe(true)
+  })
+
+  it('does nothing once the game is over', () => {
+    const won = solveEverything(newTestGame())
+    expect(applyAction(won, { type: 'tick', at: won.endsAt + 1 })).toBe(won)
+  })
+})
+
+describe('applyAction: hints', () => {
+  it('reveals hints one at a time, then stops', () => {
+    let game = newTestGame()
+    const hint = () => applyAction(game, { type: 'hint', systemId: 'system-0', at: START + 1 })
+    game = hint()
+    expect(game.systems[0]!.hintsUsed).toBe(1)
+    game = hint()
+    expect(game.systems[0]!.hintsUsed).toBe(2)
+    expect(hint()).toBe(game)
+  })
+
+  it('gives no hints for locked systems', () => {
+    const game = newTestGame()
+    const locked = game.systems.find((s) => s.status === 'locked')!
+    expect(applyAction(game, { type: 'hint', systemId: locked.id, at: START + 1 })).toBe(game)
+  })
+})
+
+describe('applyAction: the clock', () => {
+  it('a tick before time is up changes nothing', () => {
+    const game = newTestGame()
+    expect(applyAction(game, { type: 'tick', at: START + MINUTE })).toBe(game)
+  })
+
+  it('ends the game as lost when time runs out', () => {
+    const game = newTestGame()
+    const lost = applyAction(game, { type: 'tick', at: game.endsAt })
+    expect(lost).toMatchObject({ status: 'lost', endedAt: game.endsAt })
+  })
+
+  it('rejects an answer that arrives after time is up', () => {
+    const game = newTestGame()
+    const late = solve(game, 'system-0', game.endsAt + 500)
+    expect(late.status).toBe('lost')
+    expect(late.systems[0]!.status).toBe('open')
+  })
+})
+
+describe('timeLeftMs and alertLevel', () => {
+  const game = newTestGame({ difficulty: difficulty('full') })
+
+  it('counts down and never goes negative', () => {
+    expect(timeLeftMs(game, START)).toBe(20 * MINUTE)
+    expect(timeLeftMs(game, START + 5 * MINUTE)).toBe(15 * MINUTE)
+    expect(timeLeftMs(game, game.endsAt + MINUTE)).toBe(0)
+  })
+
+  it('freezes when the game is won', () => {
+    const won = solveEverything(game, START + 4 * MINUTE)
+    expect(timeLeftMs(won, START + 10 * MINUTE)).toBe(16 * MINUTE)
+  })
+
+  it.each([
+    [0, 'nominal'],
+    [9, 'nominal'],
+    [10, 'caution'],
+    [14, 'caution'],
+    [15, 'critical'],
+  ] as const)('after %i of 20 minutes: %s', (minutesIn, level) => {
+    expect(alertLevel(game, START + minutesIn * MINUTE)).toBe(level)
+  })
+})
