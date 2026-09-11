@@ -1,5 +1,6 @@
 import { timeLeftMs, type GameState } from '../../engine/game.ts'
 import { POINTS, scoreGame } from '../../engine/score.ts'
+import { endingFor } from '../../engine/story.ts'
 import Backdrop from '../components/Backdrop.tsx'
 import { formatClock, formatPoints } from '../format.ts'
 import { puzzleKindLabel } from '../labels.ts'
@@ -57,6 +58,9 @@ export default function DebriefScreen({
             {won
               ? `All ${total} systems restored with ${formatClock(timeLeft)} to spare.`
               : `${solved} of ${total} systems restored before the purge.`}
+          </p>
+          <p className="mt-3 font-display text-sm/6 text-balance text-ink-muted italic">
+            HALCYON: “{endingFor(game, THEME)}”
           </p>
 
           <dl className="mt-8 overflow-hidden rounded-xl border border-line bg-panel/80 font-display text-sm">

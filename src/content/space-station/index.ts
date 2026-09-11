@@ -199,4 +199,107 @@ export const spaceStation: ThemePack = {
     ],
     riddle: ['HALCYON voice lock', "Commander's security question", 'Personal locker prompt'],
   },
+
+  // See docs/story-space-station.md. HALCYON is calm and literal, never evil: it's following orders.
+  story: {
+    opening: [
+      {
+        from: 'HALCYON',
+        lines: [
+          'Docking complete. Welcome aboard Kepler-9, relief crew.',
+          'Contamination protocol engaged. Please remain calm.',
+          'Module purge in {time}.',
+        ],
+      },
+      {
+        from: 'HALCYON',
+        lines: [
+          'Relief crew detected. The previous crew is… unavailable.',
+          'I have sealed this module for your safety. Purge in {time}.',
+          'Restore the station systems to unlock the escape pod.',
+        ],
+      },
+      {
+        from: 'HALCYON',
+        lines: [
+          'Hello. I am HALCYON, caretaker of Kepler-9.',
+          'This module will be purged in {time}.',
+          'I would prefer you were not in it.',
+        ],
+      },
+    ],
+    newInfo: [
+      {
+        from: 'Cmdr. Ines Okafor',
+        lines: [
+          '00:14. Someone has been in the cargo hold after lights-out.',
+          "I'm changing the access codes tonight.",
+        ],
+      },
+      {
+        from: 'Priya Nair · Communications',
+        lines: ["01:02. The Mayday didn't come from my console.", 'I never sent it. So who did?'],
+      },
+      {
+        from: 'Jun Park · Medic',
+        lines: [
+          '01:40. Three cryo pods powered up overnight.',
+          'Nobody asked me. Nobody else is trained to run them.',
+        ],
+      },
+    ],
+    twist: [
+      {
+        from: 'Kepler-9 comms archive',
+        lines: [
+          'Origin: this station, three hours ago.',
+          '"The relief crew is on its way. When they dock, the purge takes them instead of us."',
+          'You were never sent to rescue them. You were sent to take the blame.',
+        ],
+      },
+      {
+        from: 'HALCYON',
+        lines: [
+          'Correction. This purge is not a malfunction.',
+          'It is a quarantine order, signed with a crew member’s credentials.',
+          'I am only following it.',
+        ],
+      },
+      {
+        from: 'HALCYON',
+        lines: [
+          'Update. Five life signs detected in the cryo bay.',
+          'The missing crew never left.',
+          'Someone put them to sleep.',
+        ],
+      },
+    ],
+    emergency: [
+      {
+        from: 'HALCYON',
+        lines: [
+          'Warning. Venting sections C through F.',
+          'Please hurry. I would prefer not to purge you.',
+        ],
+      },
+      {
+        from: 'HALCYON',
+        lines: ['Oxygen reserves at 25%. Purge sequence arming.', 'This is your final quarter.'],
+      },
+      {
+        from: 'HALCYON',
+        lines: ['Critical: reactor containment failing.', 'I am counting down for you now.'],
+      },
+    ],
+    won: [
+      'Escape pod launched. Kepler-9 thanks you for your cooperation. HALCYON, signing off.',
+      'Systems restored. Purge cancelled. Please close the airlock behind you.',
+      'Well done, relief crew. I did not expect you to make it. That is a compliment.',
+    ],
+    lost: [
+      'Module purged. Kepler-9 will send a Mayday on your behalf.',
+      'Purge complete. I am sorry. I did say please hurry.',
+      'The module is quiet again. Next relief crew arriving in 72 hours.',
+    ],
+  },
 }
