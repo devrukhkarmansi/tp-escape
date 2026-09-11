@@ -40,6 +40,13 @@ describe('saved games', () => {
     expect(loadGame(storage, game.endsAt)).toBeNull()
   })
 
+  it('keeps a paused game, even after its original end time', () => {
+    const storage = memoryStorage()
+    const paused = applyAction(newTestGame(), { type: 'pause', at: START + 1_000 })
+    saveGame(storage, paused)
+    expect(loadGame(storage, paused.endsAt + 60 * 60_000)).toEqual(paused)
+  })
+
   it('ignores a finished game', () => {
     const storage = memoryStorage()
     saveGame(storage, solveEverything(newTestGame()))
@@ -48,7 +55,7 @@ describe('saved games', () => {
 
   it('ignores a save from an older version of the game', () => {
     const storage = memoryStorage()
-    storage.setItem('tp-escape:solo-game', JSON.stringify({ version: 0, state: newTestGame() }))
+    storage.setItem('tp-escape:solo-game', JSON.stringify({ version: 1, state: newTestGame() }))
     expect(loadGame(storage, START)).toBeNull()
   })
 

@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { alertLevel, applyAction, OPEN_AT_ONCE, timeLeftMs } from './game.ts'
+import {
+  alertLevel,
+  applyAction,
+  isPaused,
+  OPEN_AT_ONCE,
+  timeLeftMs,
+  type GameState,
+} from './game.ts'
 import type { PuzzleGenerator } from './puzzle.ts'
 import {
   difficulty,
@@ -177,6 +184,61 @@ describe('applyAction: the clock', () => {
     const late = solve(game, 'system-0', game.endsAt + 500)
     expect(late.status).toBe('lost')
     expect(late.systems[0]!.status).toBe('open')
+  })
+})
+
+describe('applyAction: pause and resume', () => {
+  const pauseAt = (game: GameState, at: number) => applyAction(game, { type: 'pause', at })
+  const resumeAt = (game: GameState, at: number) => applyAction(game, { type: 'resume', at })
+
+  it('freezes the clock while paused', () => {
+    const paused = pauseAt(newTestGame(), START + 2 * MINUTE)
+    expect(isPaused(paused)).toBe(true)
+    expect(timeLeftMs(paused, START + 2 * MINUTE)).toBe(10 * MINUTE)
+    expect(timeLeftMs(paused, START + 9 * MINUTE)).toBe(10 * MINUTE)
+  })
+
+  it('gives the paused time back on resume', () => {
+    const game = newTestGame()
+    const resumed = resumeAt(pauseAt(game, START + 2 * MINUTE), START + 7 * MINUTE)
+    expect(isPaused(resumed)).toBe(false)
+    expect(resumed.endsAt).toBe(game.endsAt + 5 * MINUTE)
+    expect(timeLeftMs(resumed, START + 7 * MINUTE)).toBe(10 * MINUTE)
+    expect('pausedAt' in resumed).toBe(false)
+  })
+
+  it('ignores answers, hints and ticks while paused, even past the original end time', () => {
+    const paused = pauseAt(newTestGame(), START + MINUTE)
+    expect(solve(paused, 'system-0', START + 2 * MINUTE)).toBe(paused)
+    expect(applyAction(paused, { type: 'hint', systemId: 'system-0', at: START + 2 })).toBe(paused)
+    expect(applyAction(paused, { type: 'tick', at: paused.endsAt + MINUTE })).toBe(paused)
+  })
+
+  it('ignores a second pause, and a resume when not paused', () => {
+    const game = newTestGame()
+    const paused = pauseAt(game, START + MINUTE)
+    expect(pauseAt(paused, START + 2 * MINUTE)).toBe(paused)
+    expect(resumeAt(game, START + MINUTE)).toBe(game)
+  })
+
+  it('cannot pause once time is up', () => {
+    const game = newTestGame()
+    expect(pauseAt(game, game.endsAt).status).toBe('lost')
+  })
+
+  it('keeps alert levels on the original shift length after a pause', () => {
+    const game = newTestGame({ difficulty: difficulty('full') })
+    const resumed = resumeAt(pauseAt(game, START + 9 * MINUTE), START + 30 * MINUTE)
+    // 11 of 20 minutes left: still nominal, however long the pause was.
+    expect(alertLevel(resumed, START + 30 * MINUTE)).toBe('nominal')
+  })
+
+  it('does not count paused time against the score', () => {
+    const game = newTestGame()
+    const resumed = resumeAt(pauseAt(game, START + MINUTE), START + 50 * MINUTE)
+    const won = solveEverything(resumed, START + 51 * MINUTE)
+    // 1 minute played before the pause, 1 after: 10 of 12 minutes left.
+    expect(timeLeftMs(won, won.endedAt!)).toBe(10 * MINUTE)
   })
 })
 
