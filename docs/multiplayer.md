@@ -87,7 +87,7 @@ React Router with two routes: `/` and `/c/:code`. A `vercel.json` rewrite makes 
 
 ### Free-tier cost
 
-A 6-player, 20-minute game is roughly a few hundred writes and a couple of thousand reads, mostly from heartbeats. That's comfortably inside Firebase's free daily limits for friend groups (check the current limits in the console). The heartbeat interval is the main thing to turn down if we ever need to.
+A 6-player, 10-minute Full Shift is roughly a few hundred writes and a couple of thousand reads, mostly from heartbeats. That's comfortably inside Firebase's free daily limits for friend groups (check the current limits in the console). The heartbeat interval is the main thing to turn down if we ever need to.
 
 ## PRs
 
