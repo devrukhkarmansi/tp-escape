@@ -6,6 +6,9 @@ import { testTheme } from '../test-fixtures.ts'
 import { anagram } from './anagram.ts'
 import { caesar, shiftLetters } from './caesar.ts'
 import { PUZZLE_GENERATORS } from './index.ts'
+import { gauge } from './gauge.ts'
+import { glyph } from './glyph.ts'
+import { MORSE, morse, toMorse } from './morse.ts'
 import { riddle } from './riddle.ts'
 import { sequence } from './sequence.ts'
 
@@ -38,7 +41,10 @@ describe.each(PUZZLE_GENERATORS.map((g) => [g.kind, g] as const))('%s', (_kind, 
 
   it('always has a prompt, something to show, and at least one hint', () => {
     expect(
-      failing(puzzles, (p) => p.prompt.length > 0 && !!p.display && p.hints.length > 0),
+      failing(
+        puzzles,
+        (p) => p.prompt.length > 0 && (!!p.display || !!p.visual) && p.hints.length > 0,
+      ),
     ).toEqual([])
   })
 
@@ -137,5 +143,96 @@ describe('riddle', () => {
   it('only asks riddles from the theme bank', () => {
     const questions = testTheme.riddles.map((r) => r.question)
     expect(failing(everyPuzzle(riddle), (p) => questions.includes(p.display!))).toEqual([])
+  })
+})
+
+describe('glyph', () => {
+  const visualOf = (p: Generated) => {
+    if (p.visual?.type !== 'glyphs') throw new Error('expected glyphs')
+    return p.visual
+  }
+  const missingCount = (p: Generated) => {
+    const { glyphs, key } = visualOf(p)
+    return new Set(glyphs.filter((g) => !key.some((k) => k.glyph === g))).size
+  }
+
+  it('decodes to the answer using the key, with the missing symbols filled in', () => {
+    expect(
+      failing(everyPuzzle(glyph), (p) => {
+        const { glyphs, key } = visualOf(p)
+        const decoded = glyphs.map((g) => key.find((k) => k.glyph === g)?.letter ?? '?').join('')
+        // Every known position matches, and every "?" sits where a missing letter is.
+        return [...decoded].every((c, i) => c === '?' || c === p.answer[i])
+      }),
+    ).toEqual([])
+  })
+
+  it('gives one symbol per letter, the same symbol for the same letter', () => {
+    expect(
+      failing(everyPuzzle(glyph), (p) => {
+        const { glyphs } = visualOf(p)
+        return [...p.answer].every((letter, i) => glyphs[i] === glyphs[p.answer.indexOf(letter)])
+      }),
+    ).toEqual([])
+  })
+
+  it('hides no symbols early, and at most two late', () => {
+    expect(everyPuzzle(glyph, [0]).every((p) => missingCount(p) === 0)).toBe(true)
+    expect(everyPuzzle(glyph, [1]).every((p) => missingCount(p) <= 2)).toBe(true)
+    expect(everyPuzzle(glyph, [1]).some((p) => missingCount(p) > 0)).toBe(true)
+  })
+})
+
+describe('morse', () => {
+  it('blinks exactly the answer in Morse code', () => {
+    expect(
+      failing(everyPuzzle(morse), (p) => {
+        if (p.visual?.type !== 'morse') return false
+        return p.visual.code === toMorse(p.answer)
+      }),
+    ).toEqual([])
+  })
+
+  it('decodes letter by letter with the chart', () => {
+    const fromMorse = Object.fromEntries(Object.entries(MORSE).map(([l, c]) => [c, l]))
+    expect(
+      failing(everyPuzzle(morse), (p) => {
+        if (p.visual?.type !== 'morse') return false
+        return (
+          p.visual.code
+            .split(' ')
+            .map((c) => fromMorse[c])
+            .join('') === p.answer
+        )
+      }),
+    ).toEqual([])
+  })
+
+  it('writes the signal out early, and keeps it for a hint later', () => {
+    const early = everyPuzzle(morse, [0])
+    const late = everyPuzzle(morse, [1])
+    expect(early.every((p) => p.visual?.type === 'morse' && p.visual.showText)).toBe(true)
+    expect(late.every((p) => p.visual?.type === 'morse' && !p.visual.showText)).toBe(true)
+    expect(late.every((p) => p.answer.length <= 5)).toBe(true)
+  })
+})
+
+describe('gauge', () => {
+  it('answers with each dial’s reading, left to right', () => {
+    expect(
+      failing(everyPuzzle(gauge), (p) => {
+        if (p.visual?.type !== 'gauges') return false
+        return p.visual.gauges.map((g) => g.value).join('') === p.answer
+      }),
+    ).toEqual([])
+  })
+
+  it('uses 3 dials early and 4 later, with one upside-down dial at the end', () => {
+    const dials = (level: number) =>
+      everyPuzzle(gauge, [level]).map((p) => (p.visual?.type === 'gauges' ? p.visual.gauges : []))
+    expect(dials(0).every((g) => g.length === 3 && g.every((d) => !d.reversed))).toBe(true)
+    expect(dials(1).every((g) => g.length === 4 && g.filter((d) => d.reversed).length === 1)).toBe(
+      true,
+    )
   })
 })
