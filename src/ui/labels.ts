@@ -14,6 +14,9 @@ const PUZZLE_KIND_LABELS: Record<string, string> = {
   sequence: 'Number pattern',
   anagram: 'Scrambled word',
   riddle: 'Riddle',
+  glyph: 'Alien glyphs',
+  morse: 'Beacon signal',
+  gauge: 'Gauge readings',
   finale: 'Launch sequence',
 }
 

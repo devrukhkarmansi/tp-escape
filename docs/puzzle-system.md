@@ -130,5 +130,8 @@ Each generator takes a difficulty setting: cipher shift range, sequence rule com
 | 2B    | Unscramble (`anagram`): theme words, 4–6 letters early up to 7–9 late                                                   | `src/engine/puzzles/anagram.ts`  |
 | 2B    | Riddle bank (`riddle`): 15 of the ~30 target                                                                            | `src/engine/puzzles/riddle.ts`   |
 | 2B    | Space station content: 14 systems, 61 words, 15 riddles, intros per puzzle type                                         | `src/content/space-station/`     |
+| 4C    | Alien glyphs (`glyph`): word in symbols with a key plus decoys; one or two symbols missing from the key later           | `src/engine/puzzles/glyph.ts`    |
+| 4C    | Morse beacon (`morse`): 4–5 letter word blinked and beeped; written out early, light and sound only later               | `src/engine/puzzles/morse.ts`    |
+| 4C    | Gauge readings (`gauge`): 3–4 analog dials; fewer printed numbers later, one dial with its scale backwards              | `src/engine/puzzles/gauge.ts`    |
 
 Tests check every type against 1,000 seeds, check that each puzzle's instructions are true, and play 1,000 full games per shift length.

@@ -44,6 +44,32 @@ export function playTick(urgent: boolean): void {
   )
 }
 
+/** A held tone (fades in, holds, fades out), for Morse dashes that must sound long. */
+function tone(frequency: number, start: number, duration: number, volume: number): void {
+  if (!context || context.state !== 'running') return
+  const at = context.currentTime + start
+  const oscillator = context.createOscillator()
+  const gain = context.createGain()
+  oscillator.type = 'sine'
+  oscillator.frequency.setValueAtTime(frequency, at)
+  gain.gain.setValueAtTime(0.0001, at)
+  gain.gain.linearRampToValueAtTime(volume, at + 0.01)
+  gain.gain.setValueAtTime(volume, at + duration - 0.01)
+  gain.gain.linearRampToValueAtTime(0.0001, at + duration)
+  oscillator.connect(gain).connect(context.destination)
+  oscillator.start(at)
+  oscillator.stop(at + duration + 0.02)
+}
+
+/** Beeps a Morse signal once, on the same timing as the beacon light. */
+export function playMorse(steps: readonly { on: boolean; ms: number }[]): void {
+  let at = 0
+  for (const step of steps) {
+    if (step.on) tone(700, at / 1000, step.ms / 1000, 0.1)
+    at += step.ms
+  }
+}
+
 /** Incoming transmission: three soft rising tones. */
 export function playTransmission(): void {
   for (const [index, frequency] of [660, 880, 1320].entries()) {

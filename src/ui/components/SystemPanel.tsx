@@ -3,6 +3,7 @@ import { checkAnswer } from '../../engine/check-answer.ts'
 import type { StationSystem } from '../../engine/game.ts'
 import { POINTS } from '../../engine/score.ts'
 import { displayClass, puzzleKindLabel } from '../labels.ts'
+import PuzzleVisualView from './PuzzleVisualView.tsx'
 
 type Props = {
   system: StationSystem
@@ -65,12 +66,16 @@ export default function SystemPanel({ system, onSubmit, onHint, onBack, solverNa
 
       <p className="max-w-prose text-sm/6 text-ink-muted">{puzzle.prompt}</p>
 
-      {puzzle.display && (
-        <p
-          className={`rounded-xl border border-line bg-void/60 px-5 py-6 text-center ${displayClass(puzzle.kind)}`}
-        >
-          {puzzle.display}
-        </p>
+      {puzzle.visual ? (
+        <PuzzleVisualView visual={puzzle.visual} />
+      ) : (
+        puzzle.display && (
+          <p
+            className={`rounded-xl border border-line bg-void/60 px-5 py-6 text-center ${displayClass(puzzle.kind)}`}
+          >
+            {puzzle.display}
+          </p>
+        )
       )}
 
       {solved ? (

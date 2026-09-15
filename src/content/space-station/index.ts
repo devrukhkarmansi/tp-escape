@@ -198,6 +198,17 @@ export const spaceStation: ThemePack = {
       'Jumbled system alert',
     ],
     riddle: ['HALCYON voice lock', "Commander's security question", 'Personal locker prompt'],
+    glyph: [
+      'Symbols scratched into the airlock door',
+      'Alien script on a salvaged probe',
+      'Unknown characters on a cargo seal',
+    ],
+    morse: [
+      'The distress beacon is still blinking',
+      'A hull light is flashing a signal',
+      'The emergency buoy is repeating a message',
+    ],
+    gauge: ['Pressure gauges', 'Coolant temperature dials', 'Reactor output meters'],
   },
 
   // See docs/story-space-station.md. HALCYON is calm and literal, never evil: it's following orders.
