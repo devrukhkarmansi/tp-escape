@@ -17,6 +17,7 @@ import EvidenceLog from '../components/EvidenceLog.tsx'
 import FinalePanel from '../components/FinalePanel.tsx'
 import GameHeader from '../components/GameHeader.tsx'
 import PausedPanel from '../components/PausedPanel.tsx'
+import type { PieceView } from '../components/PuzzlePieces.tsx'
 import SystemCard, { type Viewer } from '../components/SystemCard.tsx'
 import SystemPanel from '../components/SystemPanel.tsx'
 import Toast from '../components/Toast.tsx'
@@ -26,6 +27,7 @@ import { formatClock } from '../format.ts'
 import { useGame } from '../hooks/use-game.ts'
 import { useNow } from '../hooks/use-now.ts'
 import { useSoundSetting } from '../hooks/use-sound-setting.ts'
+import { piecesFor } from '../pieces.ts'
 import { THEME } from '../solo-game.ts'
 import { playTick, playTimeUp, playTransmission } from '../sound.ts'
 import { loadSeenBeats, saveSeenBeats } from '../story-seen.ts'
@@ -158,6 +160,8 @@ export default function GameScreen({
 
   const level = alertLevel(game, now)
   const selected = game.systems.find((s) => s.id === selectedId)
+  const piecesOf = (system: StationSystem) =>
+    piecesFor(game, game.systems.indexOf(system), playerId, crew?.players, now)
   const solved = game.systems.filter((s) => s.status === 'solved').length
 
   const viewersBySystem = new Map<string, Viewer[]>()
@@ -242,6 +246,7 @@ export default function GameScreen({
                     selected={system.id === selectedId}
                     onSelect={() => select(system.id)}
                     viewers={viewersBySystem.get(system.id)}
+                    split={splitSummary(piecesOf(system))}
                   />
                 </li>
               ))}
@@ -278,6 +283,7 @@ export default function GameScreen({
             <SystemPanel
               key={selected.id}
               system={selected}
+              pieces={piecesOf(selected)}
               solverName={crew && selected.solvedBy ? nameOf(selected.solvedBy) : undefined}
               onBack={() => select(null)}
               onSubmit={(answer) =>
@@ -322,6 +328,12 @@ export default function GameScreen({
       )}
     </div>
   )
+}
+
+/** For the board: how many of a split system's pieces you hold, once they're really shared out. */
+function splitSummary(pieces: readonly PieceView[] | undefined) {
+  if (!pieces?.some((p) => p.holder)) return undefined
+  return { mine: pieces.filter((p) => !p.holder).length, total: pieces.length }
 }
 
 /** Evidence from restored systems, newest first. Card i belongs to system i (board order). */

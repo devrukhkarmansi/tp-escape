@@ -1,7 +1,7 @@
 import { checkAnswer, normalizeAnswer } from './check-answer.ts'
 import type { Difficulty, DifficultyId } from './difficulty.ts'
 import { createMystery, FINALE_KIND, type Mystery } from './mystery.ts'
-import type { Puzzle, PuzzleContext, PuzzleGenerator } from './puzzle.ts'
+import type { GeneratedPuzzle, Puzzle, PuzzleContext, PuzzleGenerator } from './puzzle.ts'
 import { createRng, type Rng } from './rng.ts'
 import type { ThemePack } from './theme.ts'
 
@@ -57,9 +57,22 @@ export type NewGame = {
   theme: ThemePack
   generators: readonly PuzzleGenerator[]
   startedAt: number
+  /** Crew games split some puzzles into pieces dealt to different players. */
+  splitPuzzles?: boolean
 }
 
-export function createGame({ seed, difficulty, theme, generators, startedAt }: NewGame): GameState {
+/** About one system in three is split in a crew game. */
+const SPLIT_EVERY = 3
+const SPLIT_SALT = 0x5b17
+
+export function createGame({
+  seed,
+  difficulty,
+  theme,
+  generators,
+  startedAt,
+  splitPuzzles = false,
+}: NewGame): GameState {
   if (generators.length === 0) throw new Error('createGame needs at least one puzzle generator')
   if (theme.systemNames.length < difficulty.systems) {
     throw new Error(
@@ -75,7 +88,7 @@ export function createGame({ seed, difficulty, theme, generators, startedAt }: N
   const lastIndex = Math.max(1, difficulty.systems - 1)
   const usedAnswers = new Set<string>()
 
-  const systems = names.map((name, index): StationSystem => {
+  const generated = names.map((_, index) => {
     const generator = chosen[index]!
     // Each system gets its own seed drawn from the game's, so one puzzle type drawing more or
     // fewer random numbers never shifts the puzzles in other systems.
@@ -83,10 +96,30 @@ export function createGame({ seed, difficulty, theme, generators, startedAt }: N
     const context = { level: index / lastIndex, theme }
     const puzzle = generateUnique(generator, systemSeed, context, usedAnswers)
     usedAnswers.add(normalizeAnswer(puzzle.answer))
+    return { kind: generator.kind, puzzle }
+  })
+
+  // Which systems split uses its own random stream, so it never changes the puzzles themselves.
+  const splittable = generated.flatMap(({ puzzle }, index) => (puzzle.split ? [index] : []))
+  const splitCount = splitPuzzles ? Math.max(1, Math.round(difficulty.systems / SPLIT_EVERY)) : 0
+  const splitAt = new Set(
+    createRng(seed ^ SPLIT_SALT)
+      .shuffle(splittable)
+      .slice(0, splitCount),
+  )
+
+  const systems = generated.map(({ kind, puzzle }, index): StationSystem => {
+    const { split, ...shown } = puzzle
+    if (split && splitAt.has(index)) {
+      // A split puzzle shows its pieces instead of the whole display or picture.
+      delete shown.display
+      delete shown.visual
+      Object.assign(shown, split)
+    }
     return {
       id: `system-${index}`,
-      name,
-      puzzle: { id: `${generator.kind}-${index}`, kind: generator.kind, ...puzzle },
+      name: names[index]!,
+      puzzle: { id: `${kind}-${index}`, kind, ...shown },
       status: index < OPEN_AT_ONCE ? 'open' : 'locked',
       hintsUsed: 0,
       wrongAttempts: 0,
@@ -136,7 +169,7 @@ function generateUnique(
   systemSeed: number,
   context: PuzzleContext,
   usedAnswers: ReadonlySet<string>,
-) {
+): GeneratedPuzzle {
   let puzzle = generator.generate(createRng(systemSeed), context)
   for (let attempt = 1; attempt < MAX_ATTEMPTS; attempt++) {
     if (!usedAnswers.has(normalizeAnswer(puzzle.answer))) break

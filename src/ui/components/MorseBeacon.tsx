@@ -3,10 +3,10 @@ import { MORSE } from '../../engine/puzzles/morse.ts'
 import { morseSteps } from '../morse-timing.ts'
 import { playMorse } from '../sound.ts'
 
-type Props = { code: string; showText: boolean }
+type Props = { code: string; showText: boolean; chart?: boolean }
 
-/** A beacon that blinks the signal on a loop; a button beeps it once. Includes a Morse chart. */
-export default function MorseBeacon({ code, showText }: Props) {
+/** A beacon that blinks the signal on a loop; a button beeps it once. Includes a Morse chart unless it's elsewhere. */
+export default function MorseBeacon({ code, showText, chart = true }: Props) {
   const [lit, setLit] = useState(false)
 
   useEffect(() => {
@@ -52,19 +52,26 @@ export default function MorseBeacon({ code, showText }: Props) {
         </p>
       )}
 
-      <details className="rounded-xl border border-line px-4 py-3" open>
-        <summary className="cursor-pointer font-display text-[11px] tracking-[0.14em] text-ink-muted uppercase">
-          Morse chart
-        </summary>
-        <dl className="mt-3 grid grid-cols-4 gap-x-3 gap-y-1.5 font-display text-xs sm:grid-cols-6">
-          {Object.entries(MORSE).map(([letter, signal]) => (
-            <div key={letter} className="flex justify-between gap-2">
-              <dt className="font-bold">{letter}</dt>
-              <dd className="tracking-widest text-ink-muted">{signal}</dd>
-            </div>
-          ))}
-        </dl>
-      </details>
+      {chart && <MorseChart />}
     </div>
+  )
+}
+
+/** Every letter's dots and dashes. Its own component so a split puzzle can put it on another screen. */
+export function MorseChart() {
+  return (
+    <details className="rounded-xl border border-line px-4 py-3" open>
+      <summary className="cursor-pointer font-display text-[11px] tracking-[0.14em] text-ink-muted uppercase">
+        Morse chart
+      </summary>
+      <dl className="mt-3 grid grid-cols-4 gap-x-3 gap-y-1.5 font-display text-xs sm:grid-cols-6">
+        {Object.entries(MORSE).map(([letter, signal]) => (
+          <div key={letter} className="flex justify-between gap-2">
+            <dt className="font-bold">{letter}</dt>
+            <dd className="tracking-widest text-ink-muted">{signal}</dd>
+          </div>
+        ))}
+      </dl>
+    </details>
   )
 }

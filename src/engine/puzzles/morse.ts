@@ -50,9 +50,19 @@ export const morse: PuzzleGenerator = {
     const showText = stage === 0
     const intro = flavor(rng, theme, 'morse', 'Distress beacon')
 
+    const prompt = `${intro}. The signal is a ${word.length}-letter word in Morse code.${showText ? ' It is written out below too.' : ' Watch the light or listen to the beeps.'}`
+
     return {
-      prompt: `${intro}. The signal is a ${word.length}-letter word in Morse code.${showText ? ' It is written out below too.' : ' Watch the light or listen to the beeps.'}`,
+      prompt,
       visual: { type: 'morse', code, showText },
+      // Split: one player watches the beacon, another has the chart to decode it.
+      split: {
+        prompt,
+        pieces: [
+          { label: 'Beacon', visual: { type: 'morse', code, showText, chart: false } },
+          { label: 'Morse chart', visual: { type: 'morse-chart' } },
+        ],
+      },
       answer: word,
       hints: [
         'Short flashes are dots, long ones are dashes. A longer pause means a new letter.',
