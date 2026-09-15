@@ -3,6 +3,7 @@ import { checkAnswer } from '../../engine/check-answer.ts'
 import type { StationSystem } from '../../engine/game.ts'
 import { POINTS } from '../../engine/score.ts'
 import { displayClass, puzzleKindLabel } from '../labels.ts'
+import PuzzlePieces, { type PieceView } from './PuzzlePieces.tsx'
 import PuzzleVisualView from './PuzzleVisualView.tsx'
 
 type Props = {
@@ -12,11 +13,20 @@ type Props = {
   onBack: () => void
   /** Crew only: who restored this system. */
   solverName?: string
+  /** A split puzzle's pieces and who holds each. */
+  pieces?: readonly PieceView[]
 }
 
 const HINT_COST = Math.abs(POINTS.perHint)
 
-export default function SystemPanel({ system, onSubmit, onHint, onBack, solverName }: Props) {
+export default function SystemPanel({
+  system,
+  onSubmit,
+  onHint,
+  onBack,
+  solverName,
+  pieces,
+}: Props) {
   const [answer, setAnswer] = useState('')
   const [wrong, setWrong] = useState(false)
   const [shaking, setShaking] = useState(false)
@@ -66,7 +76,9 @@ export default function SystemPanel({ system, onSubmit, onHint, onBack, solverNa
 
       <p className="max-w-prose text-sm/6 text-ink-muted">{puzzle.prompt}</p>
 
-      {puzzle.visual ? (
+      {pieces ? (
+        <PuzzlePieces kind={puzzle.kind} pieces={pieces} />
+      ) : puzzle.visual ? (
         <PuzzleVisualView visual={puzzle.visual} />
       ) : (
         puzzle.display && (

@@ -16,9 +16,11 @@ type Props = {
   onSelect: () => void
   /** Teammates who have this system open right now (multiplayer only). */
   viewers?: readonly Viewer[]
+  /** A split system in a crew: how many of its pieces are on this player's screen. */
+  split?: { mine: number; total: number }
 }
 
-export default function SystemCard({ system, selected, onSelect, viewers = [] }: Props) {
+export default function SystemCard({ system, selected, onSelect, viewers = [], split }: Props) {
   const tag = STATUS_TAG[system.status]
   const locked = system.status === 'locked'
 
@@ -42,6 +44,15 @@ export default function SystemCard({ system, selected, onSelect, viewers = [] }:
               ? 'Restore every system to unlock'
               : 'Restore another system to unlock'
             : puzzleKindLabel(system.puzzle.kind)}
+          {split && !locked && system.status === 'open' && (
+            <span className="text-ink">
+              {' '}
+              · ◆{' '}
+              {split.mine === 0
+                ? 'Pieces on other screens'
+                : `You hold ${split.mine} of ${split.total}`}
+            </span>
+          )}
         </span>
         {viewers.length > 0 && system.status === 'open' && (
           <span className="mt-1.5 flex flex-wrap gap-1">
