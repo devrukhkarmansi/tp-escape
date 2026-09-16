@@ -79,14 +79,7 @@ export default function PuzzleVisualView({ visual, onAnswer, onDraft }: Props) {
       )
 
     case 'anomaly':
-      return (
-        <AnomalyField
-          tell={visual.tell}
-          contacts={visual.contacts}
-          code={visual.code}
-          onAnswer={onAnswer}
-        />
-      )
+      return <AnomalyField scope={visual.scope} signature={visual.signature} onAnswer={onAnswer} />
 
     case 'wheel':
       return <CipherWheel coded={visual.coded} onDraft={onDraft} />
