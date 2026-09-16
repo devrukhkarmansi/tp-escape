@@ -38,18 +38,23 @@ export default function SystemPanel({
   const titleId = `${system.id}-title`
   const inputId = `${system.id}-answer`
 
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    if (answer.trim() === '') return
+  /** Both ways of answering end up here: typing one in, or tapping something in the picture. */
+  function answerWith(value: string) {
+    if (value.trim() === '') return
     // The engine decides; checking here too only picks which feedback to show straight away.
-    const correct = checkAnswer(puzzle, answer)
-    onSubmit(answer)
+    const correct = checkAnswer(puzzle, value)
+    onSubmit(value)
     if (correct) {
       setAnswer('')
     } else {
       setWrong(true)
       setShaking(true)
     }
+  }
+
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    answerWith(answer)
   }
 
   return (
@@ -77,9 +82,13 @@ export default function SystemPanel({
       <p className="max-w-prose text-sm/6 text-ink-muted">{puzzle.prompt}</p>
 
       {pieces ? (
-        <PuzzlePieces kind={puzzle.kind} pieces={pieces} />
+        <PuzzlePieces
+          kind={puzzle.kind}
+          pieces={pieces}
+          onAnswer={solved ? undefined : answerWith}
+        />
       ) : puzzle.visual ? (
-        <PuzzleVisualView visual={puzzle.visual} />
+        <PuzzleVisualView visual={puzzle.visual} onAnswer={solved ? undefined : answerWith} />
       ) : (
         puzzle.display && (
           <p

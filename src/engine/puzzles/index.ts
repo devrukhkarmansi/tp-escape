@@ -6,6 +6,7 @@ import { glyph } from './glyph.ts'
 import { morse } from './morse.ts'
 import { riddle } from './riddle.ts'
 import { sequence } from './sequence.ts'
+import { wiring } from './wiring.ts'
 
 /** Every puzzle type the engine can pick from. Adding a type = one file + one entry here. */
 export const PUZZLE_GENERATORS: readonly PuzzleGenerator[] = [
@@ -16,4 +17,5 @@ export const PUZZLE_GENERATORS: readonly PuzzleGenerator[] = [
   glyph,
   morse,
   gauge,
+  wiring,
 ]

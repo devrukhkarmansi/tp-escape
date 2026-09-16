@@ -2,9 +2,16 @@ import type { PuzzleVisual } from '../../engine/puzzle.ts'
 import GaugeDial from './GaugeDial.tsx'
 import GlyphSymbol from './GlyphSymbol.tsx'
 import MorseBeacon, { MorseChart } from './MorseBeacon.tsx'
+import WiringPanel, { RepairManual } from './WiringPanel.tsx'
+
+type Props = {
+  visual: PuzzleVisual
+  /** Lets a picture answer the puzzle directly, such as cutting a wire. */
+  onAnswer?: (answer: string) => void
+}
 
 /** Draws the puzzles that need a picture rather than text. */
-export default function PuzzleVisualView({ visual }: { visual: PuzzleVisual }) {
+export default function PuzzleVisualView({ visual, onAnswer }: Props) {
   switch (visual.type) {
     case 'glyphs':
       // A split glyph puzzle has the inscription on one screen and the key on another.
@@ -47,6 +54,20 @@ export default function PuzzleVisualView({ visual }: { visual: PuzzleVisual }) {
 
     case 'morse-chart':
       return <MorseChart />
+
+    case 'wiring':
+      // A split wiring puzzle has the panel on one screen and the manual on another.
+      return (
+        <div className="flex flex-col gap-4">
+          {visual.wires.length > 0 && (
+            <WiringPanel
+              wires={visual.wires}
+              onCut={onAnswer && ((wireNumber) => onAnswer(String(wireNumber)))}
+            />
+          )}
+          {visual.rules.length > 0 && <RepairManual rules={visual.rules} />}
+        </div>
+      )
 
     case 'gauges':
       return (
