@@ -1,3 +1,4 @@
+import { WIRING_KIND } from '../game.ts'
 import type { PuzzleGenerator } from '../puzzle.ts'
 import type { Rng } from '../rng.ts'
 import { band, flavor } from './shared.ts'
@@ -76,7 +77,7 @@ const RULES_BY_STAGE = [2, 3, 4] as const
  * top and cut the first wire its rules point to. More wires and more rules later in the game.
  */
 export const wiring: PuzzleGenerator = {
-  kind: 'wiring',
+  kind: WIRING_KIND,
   generate(rng, { level, theme }) {
     const stage = band(level)
     const wireCount = WIRES_BY_STAGE[stage]! + (stage === 2 ? rng.int(0, 1) : 0)
@@ -99,10 +100,10 @@ export const wiring: PuzzleGenerator = {
     const intro = flavor(rng, theme, 'wiring', 'A wiring panel hangs open')
 
     return {
-      prompt: `${intro}. Read the repair manual from the top and cut the first wire its rules point to. Enter that wire's number.`,
+      prompt: `${intro}. Read the repair manual from the top and cut the first wire its rules point to. The panel is live: cut the wrong wire and the shift ends.`,
       visual: { type: 'wiring', wires, rules: rules.map((r) => r.text) },
       split: {
-        prompt: `${intro}. One of you can see the wires, the other has the repair manual. Read the manual from the top and cut the first wire its rules point to.`,
+        prompt: `${intro}. One of you can see the wires, the other has the repair manual. Read the manual from the top and cut the first wire its rules point to. The panel is live: cut the wrong wire and the shift ends.`,
         pieces: [
           { label: 'Wire panel', visual: { type: 'wiring', wires, rules: [] } },
           {
@@ -114,7 +115,7 @@ export const wiring: PuzzleGenerator = {
       answer: String(cutAt + 1),
       altAnswers: [`wire ${cutAt + 1}`, ordinal[cutAt]!],
       hints: [
-        'Read the manual from the top. The first rule that fits the panel is the one to follow; ignore the rest.',
+        'Read the manual from the top. The first rule that fits the panel is the one to follow; ignore the rest. Take your time: a wrong cut ends the shift.',
         `The rule that fits: ${matched.text}`,
         `Cut the ${ordinal[cutAt]} wire, the ${wires[cutAt]} one.`,
       ],

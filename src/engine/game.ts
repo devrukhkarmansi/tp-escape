@@ -5,6 +5,9 @@ import type { GeneratedPuzzle, Puzzle, PuzzleContext, PuzzleGenerator } from './
 import { createRng, type Rng } from './rng.ts'
 import type { ThemePack } from './theme.ts'
 
+/** The one puzzle type where a wrong answer ends the shift. */
+export const WIRING_KIND = 'wiring'
+
 /** How many systems are workable at once, so a crew can split up. */
 export const OPEN_AT_ONCE = 3
 
@@ -35,6 +38,8 @@ export type GameState = {
   pausedAt?: number
   status: GameStatus
   endedAt?: number
+  /** Set when a wrong cut on a wiring panel ended the shift: the system it happened on. */
+  blownSystemId?: string
   /** Crew game: some puzzles are split into pieces, and the evidence is dealt across players. */
   split?: boolean
   /** The puzzle systems in board order, then the Escape Pod finale last. */
@@ -243,7 +248,13 @@ function submitAnswer(
   if (!system || system.status !== 'open' || isFinale(system)) return state
 
   if (!checkAnswer(system.puzzle, answer)) {
-    return withSystem(state, systemId, { wrongAttempts: system.wrongAttempts + 1 })
+    const missed = withSystem(state, systemId, { wrongAttempts: system.wrongAttempts + 1 })
+    // A wiring panel is live: cut the wrong wire and the shift is over. The puzzle says so, a cut
+    // takes two taps, and the last hint names the wire, so nobody loses without warning.
+    if (system.puzzle.kind === WIRING_KIND) {
+      return { ...missed, status: 'lost', endedAt: at, blownSystemId: systemId }
+    }
+    return missed
   }
 
   const solved = withSystem(state, systemId, { status: 'solved', solvedBy: playerId, solvedAt: at })

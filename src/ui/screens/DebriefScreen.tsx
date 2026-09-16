@@ -42,6 +42,7 @@ export default function DebriefScreen({
   const wrongAccusations = game.systems.find(isFinale)?.wrongAttempts ?? 0
   const timeLeft = timeLeftMs(game, game.endedAt ?? game.endsAt)
 
+  const blown = game.systems.find((s) => s.id === game.blownSystemId)
   const { suspects } = THEME.mystery
   const culprit = suspects.find((s) => s.id === game.mystery.culpritId)
 
@@ -67,12 +68,14 @@ export default function DebriefScreen({
           <h1
             className={`mt-4 font-display text-4xl font-bold tracking-wide text-balance lg:text-5xl/tight ${won ? 'text-nominal' : 'text-critical'}`}
           >
-            {won ? 'STATION SECURED' : 'MODULE PURGED'}
+            {won ? 'STATION SECURED' : blown ? 'PANEL BLOWN' : 'MODULE PURGED'}
           </h1>
           <p className="mt-4 text-base/7 text-balance text-ink-muted">
             {won
               ? `Escape pod launched with ${formatClock(timeLeft)} to spare.`
-              : `${restored} of ${puzzleSystems.length} systems restored before the purge.`}
+              : blown
+                ? `The wrong wire was cut in ${blown.name}. The panel took the module with it, ${restored} of ${puzzleSystems.length} systems restored.`
+                : `${restored} of ${puzzleSystems.length} systems restored before the purge.`}
           </p>
           <p className="mt-3 font-display text-sm/6 text-balance text-ink-muted italic">
             HALCYON: “{endingFor(game, THEME)}”
@@ -91,7 +94,9 @@ export default function DebriefScreen({
               <p className="mt-2 text-sm text-ink-muted">
                 {won
                   ? 'Your crew named them and launched the pod.'
-                  : 'The purge came before anyone could name them.'}
+                  : blown
+                    ? 'The panel blew before anyone could name them.'
+                    : 'The purge came before anyone could name them.'}
               </p>
             </div>
           )}
