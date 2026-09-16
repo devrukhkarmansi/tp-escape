@@ -300,6 +300,11 @@ export const spaceStation: ThemePack = {
       'The emergency buoy is repeating a message',
     ],
     gauge: ['Pressure gauges', 'Coolant temperature dials', 'Reactor output meters'],
+    memory: [
+      'The nav array is running its start-up pattern',
+      'The docking lights are repeating a sequence',
+      'The console is playing back its last command',
+    ],
     routing: [
       'The power grid is a mess of loose cable',
       'A conduit panel hangs open, its runs unplugged',

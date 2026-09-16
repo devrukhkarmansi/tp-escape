@@ -25,6 +25,8 @@ export type PuzzleVisual =
   | WiringVisual
   /** A cable grid to turn tile by tile until the reactor reaches the module. */
   | { type: 'routing'; grid: RoutingGrid }
+  /** Pads that flash and beep a pattern to play back. `pattern` holds pad indexes. */
+  | { type: 'memory'; pattern: number[]; pads: number; unitMs: number }
 
 /**
  * One part of a split puzzle, such as the coded message or its key. In a crew each piece is dealt

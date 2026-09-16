@@ -148,6 +148,7 @@ Each generator takes a difficulty setting: cipher shift range, sequence rule com
 | 4C    | Alien glyphs (`glyph`): word in symbols with a key plus decoys; one or two symbols missing from the key later                              | `src/engine/puzzles/glyph.ts`    |
 | 4C    | Morse beacon (`morse`): 4–5 letter word blinked and beeped; written out early, light and sound only later                                  | `src/engine/puzzles/morse.ts`    |
 | 4C    | Gauge readings (`gauge`): 3–4 analog dials; fewer printed numbers later, one dial with its scale backwards                                 | `src/engine/puzzles/gauge.ts`    |
+| 5C    | Memory sequence (`memory`): pads flash and beep a pattern to tap back; 4 pads and 4 steps early, 5 pads and 6 quicker steps late           | `src/engine/puzzles/memory.ts`   |
 | 5C    | Power routing (`routing`): turn cable tiles until the reactor reaches the module; the run lights up and logs its own code. No words at all | `src/engine/puzzles/routing.ts`  |
 | 4D    | Wiring panel (`wiring`): 3–5 wires and a manual of rules read top-down; tap a wire to cut it. Always splittable                            | `src/engine/puzzles/wiring.ts`   |
 | 4D    | Split evidence: each evidence card is dealt to one player; the rest see who holds it                                                       | `src/ui/pieces.ts`               |
