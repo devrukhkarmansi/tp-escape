@@ -287,10 +287,26 @@ describe('split pieces', () => {
         return (
           inscription.key.length === 0 &&
           key.glyphs.length === 0 &&
-          JSON.stringify(inscription.glyphs) === JSON.stringify(visual.glyphs) &&
-          JSON.stringify(key.key) === JSON.stringify(visual.key)
+          JSON.stringify(inscription.glyphs) === JSON.stringify(visual.glyphs)
         )
       }),
+    ).toEqual([])
+  })
+
+  it('glyph: a split key holds every letter, because its holder cannot see the word', () => {
+    expect(
+      failing(everyPuzzle(glyph), ({ split, answer }) => {
+        const key = split!.pieces[1]!.visual
+        if (key?.type !== 'glyphs') return false
+        const letters = new Set(key.key.map((entry) => entry.letter))
+        return [...answer].every((letter) => letters.has(letter))
+      }),
+    ).toEqual([])
+  })
+
+  it('glyph: a split puzzle never tells players a symbol is missing', () => {
+    expect(
+      failing(everyPuzzle(glyph), ({ split }) => !split!.prompt.includes('missing from the key')),
     ).toEqual([])
   })
 
