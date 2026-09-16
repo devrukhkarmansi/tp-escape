@@ -18,6 +18,7 @@ const PUZZLE_KIND_LABELS: Record<string, string> = {
   morse: 'Beacon signal',
   gauge: 'Gauge readings',
   wiring: 'Wiring panel',
+  routing: 'Power routing',
   finale: 'Launch sequence',
 }
 

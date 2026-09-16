@@ -1,4 +1,5 @@
 import type { Rng } from './rng.ts'
+import type { RoutingGrid } from './routing.ts'
 import type { ThemePack } from './theme.ts'
 
 /** Puzzles that need a picture rather than text. The screen draws these; the engine only describes them. */
@@ -22,6 +23,8 @@ export type PuzzleVisual =
       firstDial?: number
     }
   | WiringVisual
+  /** A cable grid to turn tile by tile until the reactor reaches the module. */
+  | { type: 'routing'; grid: RoutingGrid }
 
 /**
  * One part of a split puzzle, such as the coded message or its key. In a crew each piece is dealt

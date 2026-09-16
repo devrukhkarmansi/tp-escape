@@ -300,6 +300,11 @@ export const spaceStation: ThemePack = {
       'The emergency buoy is repeating a message',
     ],
     gauge: ['Pressure gauges', 'Coolant temperature dials', 'Reactor output meters'],
+    routing: [
+      'The power grid is a mess of loose cable',
+      'A conduit panel hangs open, its runs unplugged',
+      'Someone pulled the feeder cables and never put them back',
+    ],
     wiring: [
       'A junction panel hangs open, wires exposed',
       'The relay housing is unbolted and the loom is showing',
