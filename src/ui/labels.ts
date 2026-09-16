@@ -21,6 +21,7 @@ const PUZZLE_KIND_LABELS: Record<string, string> = {
   routing: 'Power routing',
   memory: 'Nav array pattern',
   wheel: 'Cipher wheel',
+  anomaly: 'Anomaly sweep',
   finale: 'Launch sequence',
 }
 

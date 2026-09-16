@@ -1,4 +1,5 @@
 import type { Rng } from './rng.ts'
+import type { AnomalyTell } from './puzzles/anomaly.ts'
 import type { RoutingGrid } from './routing.ts'
 import type { ThemePack } from './theme.ts'
 
@@ -29,6 +30,8 @@ export type PuzzleVisual =
   | { type: 'memory'; pattern: number[]; pads: number; unitMs: number }
   /** A letter ring to turn against a fixed one until the coded message reads. */
   | { type: 'wheel'; coded: string }
+  /** A scope of contacts with one odd one out. The screen lays the field out itself. */
+  | { type: 'anomaly'; tell: AnomalyTell; contacts: number; code: string }
 
 /**
  * One part of a split puzzle, such as the coded message or its key. In a crew each piece is dealt

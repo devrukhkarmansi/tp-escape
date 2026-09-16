@@ -300,6 +300,11 @@ export const spaceStation: ThemePack = {
       'The emergency buoy is repeating a message',
     ],
     gauge: ['Pressure gauges', 'Coolant temperature dials', 'Reactor output meters'],
+    anomaly: [
+      'The long-range scope is full of contacts',
+      'The debris scope has flagged an alert it cannot name',
+      'Proximity radar is showing more traffic than it should',
+    ],
     wheel: [
       'A cipher wheel is bolted to the bulkhead',
       'The airlock lock is a brass letter ring',

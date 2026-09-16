@@ -1,5 +1,6 @@
 import type { PuzzleVisual } from '../../engine/puzzle.ts'
 import GaugeDial from './GaugeDial.tsx'
+import AnomalyField from './AnomalyField.tsx'
 import CipherWheel from './CipherWheel.tsx'
 import GlyphSymbol from './GlyphSymbol.tsx'
 import MemoryPads from './MemoryPads.tsx'
@@ -75,6 +76,16 @@ export default function PuzzleVisualView({ visual, onAnswer, onDraft }: Props) {
           )}
           {visual.rules.length > 0 && <RepairManual rules={visual.rules} />}
         </div>
+      )
+
+    case 'anomaly':
+      return (
+        <AnomalyField
+          tell={visual.tell}
+          contacts={visual.contacts}
+          code={visual.code}
+          onAnswer={onAnswer}
+        />
       )
 
     case 'wheel':
