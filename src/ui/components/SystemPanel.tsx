@@ -15,6 +15,8 @@ type Props = {
   solverName?: string
   /** A split puzzle's pieces and who holds each. */
   pieces?: readonly PieceView[]
+  /** Played when an answer is refused, so the sound setting stays in one place. */
+  onWrong?: () => void
 }
 
 const HINT_COST = Math.abs(POINTS.perHint)
@@ -26,6 +28,7 @@ export default function SystemPanel({
   onBack,
   solverName,
   pieces,
+  onWrong,
 }: Props) {
   const [answer, setAnswer] = useState('')
   const [wrong, setWrong] = useState(false)
@@ -49,6 +52,7 @@ export default function SystemPanel({
     } else {
       setWrong(true)
       setShaking(true)
+      onWrong?.()
     }
   }
 
