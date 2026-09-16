@@ -15,6 +15,8 @@ export type AnswerMode =
   | 'text'
 
 export function answerMode(puzzle: Puzzle): AnswerMode {
+  // The cipher wheel writes the answer itself as you turn it; a pad underneath is just noise.
+  if (puzzle.kind === 'wheel') return 'text'
   if (/^\d+$/.test(puzzle.answer)) return 'digits'
   // Riddles are sentences as often as words ("a towel"), so they keep the keyboard.
   if (puzzle.kind === 'riddle') return 'text'

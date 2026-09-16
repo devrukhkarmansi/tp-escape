@@ -11,13 +11,14 @@ type Props = {
   kind: string
   pieces: readonly PieceView[]
   onAnswer?: (answer: string) => void
+  onDraft?: (value: string) => void
 }
 
 /**
  * A split puzzle: the pieces you hold, and a placeholder naming who holds each of the others.
  * When you hold every piece (playing alone, or everyone else dropped out) it's the whole puzzle.
  */
-export default function PuzzlePieces({ kind, pieces, onAnswer }: Props) {
+export default function PuzzlePieces({ kind, pieces, onAnswer, onDraft }: Props) {
   const shared = pieces.some((p) => p.holder)
 
   return (
@@ -65,7 +66,9 @@ export default function PuzzlePieces({ kind, pieces, onAnswer }: Props) {
                 {piece.display}
               </p>
             )}
-            {piece.visual && <PuzzleVisualView visual={piece.visual} onAnswer={onAnswer} />}
+            {piece.visual && (
+              <PuzzleVisualView visual={piece.visual} onAnswer={onAnswer} onDraft={onDraft} />
+            )}
           </section>
         ),
       )}

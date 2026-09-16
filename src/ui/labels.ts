@@ -20,6 +20,7 @@ const PUZZLE_KIND_LABELS: Record<string, string> = {
   wiring: 'Wiring panel',
   routing: 'Power routing',
   memory: 'Nav array pattern',
+  wheel: 'Cipher wheel',
   finale: 'Launch sequence',
 }
 

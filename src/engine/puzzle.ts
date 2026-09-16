@@ -27,6 +27,8 @@ export type PuzzleVisual =
   | { type: 'routing'; grid: RoutingGrid }
   /** Pads that flash and beep a pattern to play back. `pattern` holds pad indexes. */
   | { type: 'memory'; pattern: number[]; pads: number; unitMs: number }
+  /** A letter ring to turn against a fixed one until the coded message reads. */
+  | { type: 'wheel'; coded: string }
 
 /**
  * One part of a split puzzle, such as the coded message or its key. In a crew each piece is dealt
