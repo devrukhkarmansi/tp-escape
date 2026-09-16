@@ -5,6 +5,7 @@ import { gauge } from './gauge.ts'
 import { glyph } from './glyph.ts'
 import { morse } from './morse.ts'
 import { riddle } from './riddle.ts'
+import { routing } from './routing.ts'
 import { sequence } from './sequence.ts'
 import { wiring } from './wiring.ts'
 
@@ -18,4 +19,5 @@ export const PUZZLE_GENERATORS: readonly PuzzleGenerator[] = [
   morse,
   gauge,
   wiring,
+  routing,
 ]

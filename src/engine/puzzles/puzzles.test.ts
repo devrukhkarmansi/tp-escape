@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { checkAnswer } from '../check-answer.ts'
 import type { GeneratedPuzzle, PuzzleGenerator } from '../puzzle.ts'
 import { createRng } from '../rng.ts'
+import { routeCode } from '../routing.ts'
 import { testTheme } from '../test-fixtures.ts'
 import { anagram } from './anagram.ts'
 import { caesar, shiftLetters } from './caesar.ts'
@@ -10,6 +11,7 @@ import { gauge } from './gauge.ts'
 import { glyph } from './glyph.ts'
 import { MORSE, morse, toMorse } from './morse.ts'
 import { riddle } from './riddle.ts'
+import { routing } from './routing.ts'
 import { sequence } from './sequence.ts'
 import { WIRE_COLORS, wiring } from './wiring.ts'
 
@@ -415,5 +417,48 @@ describe('wiring', () => {
     const [first] = puzzles
     const cut = Number(first!.answer)
     expect(checkAnswer(first!, `wire ${cut}`)).toBe(true)
+  })
+})
+
+describe('routing', () => {
+  const gridOf = (p: Generated) => {
+    if (p.visual?.type !== 'routing') throw new Error('expected a cable grid')
+    return p.visual.grid
+  }
+  const puzzles = everyPuzzle(routing)
+
+  it('never starts already connected, so there is always something to do', () => {
+    expect(failing(puzzles, (p) => routeCode(gridOf(p)) === '')).toEqual([])
+  })
+
+  it('can always be connected by turning tiles, and that spells the answer', () => {
+    expect(
+      failing(puzzles, (p) => {
+        // The run was laid out with every tile unturned, so that position must connect.
+        const grid = gridOf(p)
+        const laidOut = { ...grid, tiles: grid.tiles.map((tile) => ({ ...tile, turns: 0 })) }
+        return routeCode(laidOut) === p.answer && p.answer.length > 0
+      }),
+    ).toEqual([])
+  })
+
+  it('gives every tile exactly two ends, so power never hits a fork', () => {
+    expect(
+      failing(puzzles, (p) =>
+        gridOf(p).tiles.every(
+          (tile) => [...tile.mask.toString(2)].filter((b) => b === '1').length === 2,
+        ),
+      ),
+    ).toEqual([])
+  })
+
+  it('grows from a 3×3 grid to 4×4 as the shift goes on', () => {
+    const size = (level: number) => everyPuzzle(routing, [level]).map((p) => gridOf(p))
+    expect(new Set(size(0).map((g) => `${g.columns}x${g.rows}`))).toEqual(new Set(['3x3']))
+    expect(new Set(size(1).map((g) => `${g.columns}x${g.rows}`))).toEqual(new Set(['4x4']))
+  })
+
+  it('answers with digits only, so the keypad fits it', () => {
+    expect(failing(puzzles, (p) => /^\d+$/.test(p.answer))).toEqual([])
   })
 })
