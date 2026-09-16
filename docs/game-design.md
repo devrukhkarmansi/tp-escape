@@ -125,7 +125,7 @@ Each stage ends with something playable, and each one teaches something new.
 | **1. Pipeline** ✅         | Empty React + TypeScript + Tailwind app, deployed to Vercel on every push                                   | Project setup, CI/CD                                             |
 | **2. Solo game** ✅        | Seeded puzzle generators, mission board, answer checking, timer, debrief. All on one phone, no Firebase yet | Components, state, seeded randomness, pure functions             |
 | **3. Multiplayer**         | Crew codes, joining, live sync, rejoin, first-correct-answer-wins. Plan: [multiplayer.md](multiplayer.md)   | Firestore modeling, live listeners, transactions, anonymous auth |
-| **3½. Sound**              | Timer ticks in the last minute, alert chimes, solve/wrong tones, win/lose stings, a mute button             | Web Audio API (sounds generated in code, no audio files)         |
+| **3½. Sound** ✅           | Timer ticks in the last minute, alert chimes, solve/wrong tones, win/lose stings, a mute button             | Web Audio API (sounds generated in code, no audio files)         |
 | **4. Co-op and story**     | Private intel, split puzzles, timed story beats, the twist, the random-traitor finale                       | Security rules, event scheduling                                 |
 | **5. Polish and playtest** | Animations, awards, real playtest with 2+ phones                                                            | Motion (animation library)                                       |
 | **Later**                  | Theme picker, more puzzle types, live AI puzzles                                                            | Serverless functions, LLM APIs                                   |

@@ -15,6 +15,8 @@ type Props = {
   onAccuse: (suspectId: string, code: string) => void
   onHint: () => void
   onBack: () => void
+  /** Played when a launch is refused, so the sound setting stays in one place. */
+  onWrong?: () => void
 }
 
 const HINT_COST = Math.abs(POINTS.perHint)
@@ -31,6 +33,7 @@ export default function FinalePanel({
   onAccuse,
   onHint,
   onBack,
+  onWrong,
 }: Props) {
   const [suspectId, setSuspectId] = useState<string | null>(null)
   const [code, setCode] = useState('')
@@ -52,6 +55,7 @@ export default function FinalePanel({
     if (!correct) {
       setRefused(true)
       setShaking(true)
+      onWrong?.()
     }
   }
 

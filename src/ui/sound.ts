@@ -83,3 +83,30 @@ export function playTimeUp(): void {
     beep({ frequency: 330 - index * 60, duration: 0.24, volume: 0.14, type: 'sawtooth', delay })
   }
 }
+
+/** A system restored: two rising notes, like a panel coming back online. */
+export function playSolved(): void {
+  for (const [index, frequency] of [740, 1108].entries()) {
+    beep({ frequency, duration: 0.16, volume: 0.1, type: 'triangle', delay: index * 0.1 })
+  }
+}
+
+/** A refused answer: one short, low buzz. Quiet enough to be a nudge, not a telling-off. */
+export function playWrong(): void {
+  beep({ frequency: 180, duration: 0.16, volume: 0.09, type: 'sawtooth' })
+}
+
+/** The station moving to caution, then to critical: two pulses, lower and harder each time. */
+export function playAlert(critical: boolean): void {
+  const frequency = critical ? 320 : 440
+  for (const delay of [0, 0.22]) {
+    beep({ frequency, duration: 0.18, volume: critical ? 0.13 : 0.1, type: 'square', delay })
+  }
+}
+
+/** The Escape Pod launching: a four-note climb. */
+export function playLaunch(): void {
+  for (const [index, frequency] of [523, 659, 784, 1047].entries()) {
+    beep({ frequency, duration: 0.22, volume: 0.11, type: 'triangle', delay: index * 0.13 })
+  }
+}
