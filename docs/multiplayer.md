@@ -18,8 +18,9 @@ A crew of 1–6 plays **one shared game from their own phones or laptops**. The 
 1. **Host:** Home → **Host a crew** → pick shift length → enter a name → **lobby** with the crew code (`K7QXM`) and a share link (`tp-escape-deploy.vercel.app/c/K7QXM`).
 2. **Crew:** open the link (or **Join with code**) → enter a name → the lobby shows everyone who's in.
 3. **Host taps Launch.** Every screen switches to the board at the same moment, with the same timer.
-4. **Anyone solves anything.** Each system card shows who's working on it (a small "Ravi" tag), so the crew can split up. Solving a system updates every screen, with a toast: _"Ravi restored Life Support."_
-5. **Debrief for everyone**, showing who restored what. **Play again** keeps the same crew and code: everyone goes back to the lobby together, and the host launches the next round.
+4. **Room for everyone.** The board opens one system per player (minimum three), so a crew of six has six systems live at once rather than queueing behind three.
+5. **Anyone solves anything.** Each system card shows who's working on it (a small "Ravi" tag), so the crew can split up. Solving a system updates every screen, with a toast: _"Ravi restored Life Support."_
+6. **Debrief for everyone**, showing who restored what. **Play again** keeps the same crew and code: everyone goes back to the lobby together, and the host launches the next round.
 
 Late joiners can join mid-game. A phone that locks or drops rejoins automatically when it comes back.
 

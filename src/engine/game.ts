@@ -8,8 +8,16 @@ import type { ThemePack } from './theme.ts'
 /** The one puzzle type where a wrong answer ends the shift. */
 export const WIRING_KIND = 'wiring'
 
-/** How many systems are workable at once, so a crew can split up. */
-export const OPEN_AT_ONCE = 3
+/** Nobody should ever be without a system of their own, so a solo player or a pair still gets 3. */
+export const MIN_OPEN_AT_ONCE = 3
+
+/**
+ * How many systems are workable at once: one per player, never fewer than three. A split puzzle
+ * only ever needs two people, so a fixed three left the fourth player of a crew with nothing to do.
+ */
+export function openAtOnceFor(crewSize: number, systems: number): number {
+  return Math.min(systems, Math.max(MIN_OPEN_AT_ONCE, crewSize))
+}
 
 export type SystemStatus = 'locked' | 'open' | 'solved'
 
@@ -42,6 +50,8 @@ export type GameState = {
   blownSystemId?: string
   /** Crew game: some puzzles are split into pieces, and the evidence is dealt across players. */
   split?: boolean
+  /** How many systems are open at once, set from the crew size when the shift launched. */
+  openAtOnce: number
   /** The puzzle systems in board order, then the Escape Pod finale last. */
   systems: readonly StationSystem[]
   mystery: Mystery
@@ -66,6 +76,8 @@ export type NewGame = {
   startedAt: number
   /** Crew games split some puzzles into pieces dealt to different players. */
   splitPuzzles?: boolean
+  /** How many players launched the shift. Decides how much of the board is open at once. */
+  crewSize?: number
 }
 
 /** About one system in three is split in a crew game. */
@@ -79,6 +91,7 @@ export function createGame({
   generators,
   startedAt,
   splitPuzzles = false,
+  crewSize = 1,
 }: NewGame): GameState {
   if (generators.length === 0) throw new Error('createGame needs at least one puzzle generator')
   if (theme.systemNames.length < difficulty.systems) {
@@ -93,6 +106,7 @@ export function createGame({
   const names = rng.shuffle(theme.systemNames).slice(0, difficulty.systems)
   const chosen = spreadGenerators(rng, generators, difficulty.systems)
   const lastIndex = Math.max(1, difficulty.systems - 1)
+  const openAtOnce = openAtOnceFor(crewSize, difficulty.systems)
   const usedAnswers = new Set<string>()
 
   const generated = names.map((_, index) => {
@@ -127,7 +141,7 @@ export function createGame({
       id: `system-${index}`,
       name: names[index]!,
       puzzle: { id: `${kind}-${index}`, kind, ...shown },
-      status: index < OPEN_AT_ONCE ? 'open' : 'locked',
+      status: index < openAtOnce ? 'open' : 'locked',
       hintsUsed: 0,
       wrongAttempts: 0,
     }
@@ -156,6 +170,7 @@ export function createGame({
     durationMs,
     endsAt: startedAt + durationMs,
     status: 'playing',
+    openAtOnce,
     ...(splitPuzzles && { split: true }),
     systems: [...systems, escapePod],
     mystery,
