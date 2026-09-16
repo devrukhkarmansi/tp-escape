@@ -8,6 +8,7 @@ import {
   type GameState,
 } from './game.ts'
 import type { PuzzleGenerator } from './puzzle.ts'
+import { wiring } from './puzzles/wiring.ts'
 import {
   difficulty,
   newTestGame,
@@ -320,5 +321,46 @@ describe('timeLeftMs and alertLevel', () => {
     [7.5, 'critical'],
   ] as const)('after %s of 10 minutes: %s', (minutesIn, level) => {
     expect(alertLevel(game, START + minutesIn * MINUTE)).toBe(level)
+  })
+})
+
+describe('applyAction: the wiring panel is live', () => {
+  const wiringGame = () =>
+    newTestGame({ generators: [wiring], theme: { ...testTheme, flavor: {} } })
+
+  it('ends the shift the moment the wrong wire is cut', () => {
+    const game = wiringGame()
+    const wrongWire = String(Number(game.systems[0]!.puzzle.answer) === 1 ? 2 : 1)
+    const next = applyAction(game, {
+      type: 'submit',
+      systemId: 'system-0',
+      answer: wrongWire,
+      playerId: 'ana',
+      at: START + 5_000,
+    })
+
+    expect(next.status).toBe('lost')
+    expect(next.endedAt).toBe(START + 5_000)
+    expect(next.blownSystemId).toBe('system-0')
+    expect(next.systems[0]!.wrongAttempts).toBe(1)
+  })
+
+  it('leaves the shift running when the right wire is cut', () => {
+    const game = wiringGame()
+    const next = solve(game, 'system-0')
+    expect(next.status).toBe('playing')
+    expect(next.blownSystemId).toBeUndefined()
+    expect(next.systems[0]!.status).toBe('solved')
+  })
+
+  it('does not end the shift for a wrong answer on any other puzzle type', () => {
+    const next = applyAction(newTestGame(), {
+      type: 'submit',
+      systemId: 'system-0',
+      answer: 'definitely wrong',
+      playerId: 'ana',
+      at: START + 1_000,
+    })
+    expect(next.status).toBe('playing')
   })
 })
