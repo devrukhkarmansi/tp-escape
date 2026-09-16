@@ -57,6 +57,7 @@ tp-escape/
 │   ├── ui/
 │   │   ├── screens/             Home, Lobby, Board, System, Alert, Debrief
 │   │   └── components/          Timer, SystemCard, IntelPanel, …
+├── e2e/                        Playwright: a real two-browser crew game
 │   └── main.tsx
 ├── tests/e2e/                   Playwright, stage 3+
 ├── firestore.rules              security rules, versioned like code
