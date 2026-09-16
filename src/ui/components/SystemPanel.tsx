@@ -59,6 +59,12 @@ export default function SystemPanel({
     }
   }
 
+  /** A picture can fill the answer box; sending it is still the crew's call. */
+  function draft(value: string) {
+    setAnswer(value)
+    setWrong(false)
+  }
+
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     answerWith(answer)
@@ -95,7 +101,11 @@ export default function SystemPanel({
           onAnswer={solved ? undefined : answerWith}
         />
       ) : puzzle.visual ? (
-        <PuzzleVisualView visual={puzzle.visual} onAnswer={solved ? undefined : answerWith} />
+        <PuzzleVisualView
+          visual={puzzle.visual}
+          onAnswer={solved ? undefined : answerWith}
+          onDraft={solved ? undefined : draft}
+        />
       ) : (
         puzzle.display && (
           <p

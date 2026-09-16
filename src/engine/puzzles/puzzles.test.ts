@@ -14,6 +14,7 @@ import { MORSE, morse, toMorse } from './morse.ts'
 import { riddle } from './riddle.ts'
 import { routing } from './routing.ts'
 import { sequence } from './sequence.ts'
+import { wheel } from './wheel.ts'
 import { WIRE_COLORS, wiring } from './wiring.ts'
 
 const SEEDS = Array.from({ length: 1000 }, (_, i) => i * 7919 + 1)
@@ -519,5 +520,43 @@ describe('memory', () => {
         return p.hints.at(-1)!.includes(spoken)
       }),
     ).toEqual([])
+  })
+})
+
+describe('wheel', () => {
+  const codedOf = (p: Generated) => {
+    if (p.visual?.type !== 'wheel') throw new Error('expected a cipher wheel')
+    return p.visual.coded
+  }
+  const puzzles = everyPuzzle(wheel)
+
+  it('can be read by turning the ring, and only at one setting', () => {
+    expect(
+      failing(puzzles, (p) => {
+        const readings = Array.from({ length: 26 }, (_, turn) =>
+          shiftLetters(codedOf(p), -turn),
+        ).filter((reading) => reading === p.answer)
+        return readings.length === 1
+      }),
+    ).toEqual([])
+  })
+
+  it('never hands over a message that already reads as the answer', () => {
+    expect(failing(puzzles, (p) => codedOf(p) !== p.answer)).toEqual([])
+  })
+
+  it('says how far the ring is out in its last hint, and that really decodes it', () => {
+    expect(
+      failing(puzzles, (p) => {
+        const steps = Number(/ring is (\d+) steps out/.exec(p.hints.at(-1)!)?.[1])
+        return shiftLetters(codedOf(p), -steps) === p.answer
+      }),
+    ).toEqual([])
+  })
+
+  it('uses longer words later in the game', () => {
+    const lengths = (level: number) => everyPuzzle(wheel, [level]).map((p) => p.answer.length)
+    expect(Math.max(...lengths(0))).toBeLessThanOrEqual(6)
+    expect(Math.min(...lengths(1))).toBeGreaterThanOrEqual(7)
   })
 })

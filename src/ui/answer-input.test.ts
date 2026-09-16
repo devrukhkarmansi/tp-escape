@@ -28,6 +28,10 @@ describe('answerMode', () => {
     expect(answerMode(puzzle({ kind: 'morse', answer: 'MOON' }))).toBe('letters')
   })
 
+  it('leaves the cipher wheel alone, since turning it fills the answer in', () => {
+    expect(answerMode(puzzle({ kind: 'wheel', answer: 'HATCH' }))).toBe('text')
+  })
+
   it('keeps the keyboard for riddles and anything with spaces', () => {
     expect(answerMode(puzzle({ kind: 'riddle', answer: 'towel' }))).toBe('text')
     expect(answerMode(puzzle({ kind: 'finale', answer: 'MOON DUST' }))).toBe('text')

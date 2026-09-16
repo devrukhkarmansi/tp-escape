@@ -300,6 +300,11 @@ export const spaceStation: ThemePack = {
       'The emergency buoy is repeating a message',
     ],
     gauge: ['Pressure gauges', 'Coolant temperature dials', 'Reactor output meters'],
+    wheel: [
+      'A cipher wheel is bolted to the bulkhead',
+      'The airlock lock is a brass letter ring',
+      'A dial of letters sits beside the hatch, half turned',
+    ],
     memory: [
       'The nav array is running its start-up pattern',
       'The docking lights are repeating a sequence',
