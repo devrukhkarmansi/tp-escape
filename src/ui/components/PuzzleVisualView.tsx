@@ -26,9 +26,12 @@ export default function PuzzleVisualView({ visual, onAnswer }: Props) {
           )}
           {visual.key.length > 0 && (
             <div>
-              <p className="mb-2 font-display text-[11px] tracking-[0.14em] text-ink-muted uppercase">
-                Key
-              </p>
+              {/* A split puzzle's piece is already labelled "Symbol key", so don't repeat it. */}
+              {visual.glyphs.length > 0 && (
+                <p className="mb-2 font-display text-[11px] tracking-[0.14em] text-ink-muted uppercase">
+                  Key
+                </p>
+              )}
               <dl className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                 {visual.key.map(({ glyph, letter }) => (
                   <div

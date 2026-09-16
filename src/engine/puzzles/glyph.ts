@@ -53,6 +53,13 @@ function chooseHidden(
   return new Set()
 }
 
+/** "One symbol is missing…", or nothing at all when the key is complete. */
+function missingNote(count: number): string {
+  if (count === 0) return ''
+  const [symbol, it] = count === 1 ? ['One symbol is', 'it'] : ['Two symbols are', 'them']
+  return ` ${symbol} missing from the key: work ${it} out from the word.`
+}
+
 /**
  * Alien glyphs: a theme word in symbols, with a partial key. Early the key covers every letter;
  * later one or two symbols are missing and must be worked out from the word. The missing symbols
@@ -76,22 +83,23 @@ export const glyph: PuzzleGenerator = {
     const missing = [...hidden]
     const intro = flavor(rng, theme, 'glyph', 'Alien inscription')
 
-    const missingNote =
-      missing.length === 0
-        ? ''
-        : ` ${missing.length === 1 ? 'One symbol is' : 'Two symbols are'} missing from the key: work ${missing.length === 1 ? 'it' : 'them'} out from the word.`
-
-    const prompt = `${intro}. Translate the symbols using the key.${missingNote}`
+    const prompt = `${intro}. Translate the symbols using the key.${missingNote(missing.length)}`
     const glyphs = [...word].map(glyphOf)
+
+    // On one screen the key hides a symbol or two, and you work them out from the word. Across two
+    // screens the key is whole: its holder cannot see the word, so there is no pattern to work from.
+    const splitKey = rng
+      .shuffle([...keyLetters(new Set())])
+      .map((letter) => ({ glyph: glyphOf(letter), letter }))
 
     return {
       prompt,
       visual: { type: 'glyphs', glyphs, key },
       split: {
-        prompt,
+        prompt: `${intro}. One of you has the inscription, the other the key. Translate the symbols between you.`,
         pieces: [
           { label: 'Inscription', visual: { type: 'glyphs', glyphs, key: [] } },
-          { label: 'Symbol key', visual: { type: 'glyphs', glyphs: [], key } },
+          { label: 'Symbol key', visual: { type: 'glyphs', glyphs: [], key: splitKey } },
         ],
       },
       answer: word,
