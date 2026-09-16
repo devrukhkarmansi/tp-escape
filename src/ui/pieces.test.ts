@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { newTestGame, splitNumberGenerator, START } from '../engine/test-fixtures.ts'
 import type { Player } from '../store/crew.ts'
-import { piecesFor } from './pieces.ts'
+import { evidenceHolders, piecesFor } from './pieces.ts'
 
 const game = newTestGame({ generators: [splitNumberGenerator('split')], splitPuzzles: true })
 const splitIndex = game.systems.findIndex((s) => s.puzzle.pieces)
@@ -36,5 +36,30 @@ describe('piecesFor', () => {
   it('hands a dropped player’s piece to whoever is still here', () => {
     const players = [player('ana', 1), player('ben', 2, START - 5 * 60_000)]
     expect(piecesFor(game, splitIndex, 'ana', players, START)!.every((p) => !p.holder)).toBe(true)
+  })
+})
+
+describe('evidenceHolders', () => {
+  it('is undefined in a solo game, where every card is yours', () => {
+    expect(evidenceHolders(newTestGame(), 'solo')).toBeUndefined()
+  })
+
+  it('shares the cards out evenly and both phones agree', () => {
+    const players = [player('ana', 1), player('ben', 2)]
+    const ana = evidenceHolders(game, 'ana', players, START)!
+    const ben = evidenceHolders(game, 'ben', players, START)!
+
+    expect(ana).toHaveLength(game.mystery.evidence.length)
+    const mine = ana.filter((holder) => holder === null).length
+    expect(mine).toBe(Math.round(ana.length / 2))
+    // Where Ana sees herself (null), Ben must name Ana, and the other way round.
+    ana.forEach((holder, i) => {
+      expect(holder?.id ?? 'ana').toBe(ben[i]?.id ?? 'ben')
+    })
+  })
+
+  it('hands a dropped player’s cards to whoever is still here', () => {
+    const players = [player('ana', 1), player('ben', 2, START - 5 * 60_000)]
+    expect(evidenceHolders(game, 'ana', players, START)!.every((h) => h === null)).toBe(true)
   })
 })

@@ -35,6 +35,8 @@ export type GameState = {
   pausedAt?: number
   status: GameStatus
   endedAt?: number
+  /** Crew game: some puzzles are split into pieces, and the evidence is dealt across players. */
+  split?: boolean
   /** The puzzle systems in board order, then the Escape Pod finale last. */
   systems: readonly StationSystem[]
   mystery: Mystery
@@ -149,6 +151,7 @@ export function createGame({
     durationMs,
     endsAt: startedAt + durationMs,
     status: 'playing',
+    ...(splitPuzzles && { split: true }),
     systems: [...systems, escapePod],
     mystery,
   }

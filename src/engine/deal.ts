@@ -2,6 +2,9 @@ import { createRng } from './rng.ts'
 
 const DEAL_SALT = 0x5ea7
 
+/** The evidence deal's slot. Systems use their board position, so -1 is free for the evidence. */
+export const EVIDENCE_SLOT = -1
+
 export type Deal = {
   seed: number
   /** Board position of the system, so different systems start with different players. */

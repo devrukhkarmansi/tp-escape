@@ -110,6 +110,11 @@ describe('createGame: split puzzles', () => {
 
   it('never splits puzzles in a solo game', () => {
     expect(splitSystems(newTestGame({ generators }))).toEqual([])
+    expect(newTestGame({ generators }).split).toBeUndefined()
+  })
+
+  it('marks a crew game, so the evidence is dealt out too', () => {
+    expect(newTestGame({ generators, splitPuzzles: true }).split).toBe(true)
   })
 
   it.each([
