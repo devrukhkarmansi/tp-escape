@@ -1,6 +1,7 @@
 import type { PuzzleVisual } from '../../engine/puzzle.ts'
 import GaugeDial from './GaugeDial.tsx'
 import GlyphSymbol from './GlyphSymbol.tsx'
+import MemoryPads from './MemoryPads.tsx'
 import MorseBeacon, { MorseChart } from './MorseBeacon.tsx'
 import RoutingGridView from './RoutingGridView.tsx'
 import WiringPanel, { RepairManual } from './WiringPanel.tsx'
@@ -71,6 +72,16 @@ export default function PuzzleVisualView({ visual, onAnswer }: Props) {
           )}
           {visual.rules.length > 0 && <RepairManual rules={visual.rules} />}
         </div>
+      )
+
+    case 'memory':
+      return (
+        <MemoryPads
+          pattern={visual.pattern}
+          pads={visual.pads}
+          unitMs={visual.unitMs}
+          onAnswer={onAnswer}
+        />
       )
 
     case 'routing':

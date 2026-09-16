@@ -9,6 +9,7 @@ import { caesar, shiftLetters } from './caesar.ts'
 import { PUZZLE_GENERATORS } from './index.ts'
 import { gauge } from './gauge.ts'
 import { glyph } from './glyph.ts'
+import { memory } from './memory.ts'
 import { MORSE, morse, toMorse } from './morse.ts'
 import { riddle } from './riddle.ts'
 import { routing } from './routing.ts'
@@ -460,5 +461,63 @@ describe('routing', () => {
 
   it('answers with digits only, so the keypad fits it', () => {
     expect(failing(puzzles, (p) => /^\d+$/.test(p.answer))).toEqual([])
+  })
+})
+
+describe('memory', () => {
+  const patternOf = (p: Generated) => {
+    if (p.visual?.type !== 'memory') throw new Error('expected memory pads')
+    return p.visual
+  }
+  const puzzles = everyPuzzle(memory)
+
+  it('answers with the pads in order, counting from 1', () => {
+    expect(
+      failing(
+        puzzles,
+        (p) =>
+          patternOf(p)
+            .pattern.map((pad) => pad + 1)
+            .join('') === p.answer,
+      ),
+    ).toEqual([])
+  })
+
+  it('never flashes the same pad twice in a row, which would look like one long flash', () => {
+    expect(
+      failing(puzzles, (p) =>
+        patternOf(p).pattern.every((pad, index, all) => index === 0 || pad !== all[index - 1]),
+      ),
+    ).toEqual([])
+  })
+
+  it('only uses pads that are on screen', () => {
+    expect(
+      failing(puzzles, (p) => {
+        const { pattern, pads } = patternOf(p)
+        return pattern.every((pad) => pad >= 0 && pad < pads)
+      }),
+    ).toEqual([])
+  })
+
+  it('gets longer and faster as the shift goes on', () => {
+    const shape = (level: number) => everyPuzzle(memory, [level]).map(patternOf)
+    expect(new Set(shape(0).map((v) => v.pattern.length))).toEqual(new Set([4]))
+    expect(new Set(shape(0.5).map((v) => v.pattern.length))).toEqual(new Set([5]))
+    expect(new Set(shape(1).map((v) => v.pattern.length))).toEqual(new Set([6]))
+    expect(Math.max(...shape(1).map((v) => v.unitMs))).toBeLessThan(
+      Math.min(...shape(0).map((v) => v.unitMs)),
+    )
+  })
+
+  it('tells the crew the pattern in its last hint', () => {
+    expect(
+      failing(puzzles, (p) => {
+        const spoken = patternOf(p)
+          .pattern.map((pad) => pad + 1)
+          .join(' – ')
+        return p.hints.at(-1)!.includes(spoken)
+      }),
+    ).toEqual([])
   })
 })

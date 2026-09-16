@@ -19,6 +19,7 @@ const PUZZLE_KIND_LABELS: Record<string, string> = {
   gauge: 'Gauge readings',
   wiring: 'Wiring panel',
   routing: 'Power routing',
+  memory: 'Nav array pattern',
   finale: 'Launch sequence',
 }
 

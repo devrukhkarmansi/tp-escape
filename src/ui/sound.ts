@@ -110,3 +110,11 @@ export function playLaunch(): void {
     beep({ frequency, duration: 0.22, volume: 0.11, type: 'triangle', delay: index * 0.13 })
   }
 }
+
+/** The memory pads: a note per pad, low to high, so a pattern is a little tune. */
+const PAD_NOTES = [392, 494, 587, 698, 880]
+
+export function playPad(index: number, durationMs = 260): void {
+  const frequency = PAD_NOTES[index % PAD_NOTES.length]!
+  tone(frequency, 0, durationMs / 1000, 0.09)
+}
