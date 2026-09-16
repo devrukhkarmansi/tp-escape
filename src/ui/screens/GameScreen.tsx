@@ -175,6 +175,7 @@ export default function GameScreen({
         canPlayAgain={isHost}
         hostName={hostName}
         solverName={crew ? nameOf : undefined}
+        crewSize={crew?.players.length ?? 1}
         homeLabel={crew ? 'Leave crew' : 'Back to home'}
       />
     )
