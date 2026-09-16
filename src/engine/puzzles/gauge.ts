@@ -17,10 +17,24 @@ export const gauge: PuzzleGenerator = {
       reversed: i === reversedAt,
     }))
     const intro = flavor(rng, theme, 'gauge', 'Pressure gauges')
+    const prompt = `${intro}. Read each dial from left to right and enter the ${count} digits.${reversedAt >= 0 ? ' One dial was mounted upside down: its scale runs backwards.' : ''}`
+
+    // Split: the dials are in two banks on different screens, and the crew puts the readings together.
+    const half = Math.ceil(count / 2)
+    const bank = (from: number, to: number) => ({
+      label: to - from === 1 ? `Dial ${from + 1}` : `Dials ${from + 1}–${to}`,
+      visual: {
+        type: 'gauges' as const,
+        gauges: gauges.slice(from, to),
+        labelEvery,
+        firstDial: from,
+      },
+    })
 
     return {
-      prompt: `${intro}. Read each dial from left to right and enter the ${count} digits.${reversedAt >= 0 ? ' One dial was mounted upside down: its scale runs backwards.' : ''}`,
+      prompt,
       visual: { type: 'gauges', gauges, labelEvery },
+      split: { prompt, pieces: [bank(0, half), bank(half, count)] },
       answer: gauges.map((g) => g.value).join(''),
       hints: [
         'Each dial runs from 0 to 9. Read where its needle points.',

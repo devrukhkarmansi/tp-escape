@@ -37,9 +37,25 @@ export const caesar: PuzzleGenerator = {
       'Every letter was moved forward by the same amount. Work out how far.',
     ][stage]!
 
+    // Split: one player has the coded message, another the key. Late on there is no key to hand
+    // over (players find the shift themselves), so late codes are never split.
+    const key = [
+      { text: 'Every letter was moved forward this many places:', display: `+${shift}` },
+      { text: 'The first letter decodes like this:', display: `${coded[0]} → ${word[0]}` },
+    ][stage]
+
     return {
       prompt: `${intro}. ${instructions}`,
       display: coded,
+      ...(key && {
+        split: {
+          prompt: `${intro}. Every letter was moved forward by the same amount. The cipher key says how far.`,
+          pieces: [
+            { label: 'Coded message', display: coded },
+            { label: 'Cipher key', ...key },
+          ],
+        },
+      }),
       answer: word,
       hints: [
         'Move each letter back along the alphabet by the same number of places.',

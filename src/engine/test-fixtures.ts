@@ -131,3 +131,27 @@ export function solveEverything(state: GameState, at = START + 1_000): GameState
   }
   return current
 }
+
+/** Like numberGenerator, but the number is split in two pieces, like a real split puzzle. */
+export function splitNumberGenerator(kind: string): PuzzleGenerator {
+  return {
+    kind,
+    generate: (rng) => {
+      const n = rng.int(10, 99)
+      const [tens, ones] = String(n)
+      return {
+        prompt: `Enter ${n}`,
+        display: String(n),
+        split: {
+          prompt: 'Put the two digits together',
+          pieces: [
+            { label: 'Tens', display: tens },
+            { label: 'Ones', display: ones },
+          ],
+        },
+        answer: String(n),
+        hints: ['It is a number'],
+      }
+    },
+  }
+}

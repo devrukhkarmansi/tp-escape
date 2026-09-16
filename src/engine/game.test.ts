@@ -14,6 +14,7 @@ import {
   numberGenerator,
   solve,
   solveEverything,
+  splitNumberGenerator,
   START,
   testTheme,
 } from './test-fixtures.ts'
@@ -100,6 +101,58 @@ describe('createGame', () => {
 
   it('refuses to start with no puzzle types', () => {
     expect(() => newTestGame({ generators: [] })).toThrow()
+  })
+})
+
+describe('createGame: split puzzles', () => {
+  const generators = [numberGenerator('plain'), splitNumberGenerator('split')]
+  const splitSystems = (game: GameState) => game.systems.filter((s) => s.puzzle.pieces)
+
+  it('never splits puzzles in a solo game', () => {
+    expect(splitSystems(newTestGame({ generators }))).toEqual([])
+    expect(newTestGame({ generators }).split).toBeUndefined()
+  })
+
+  it('marks a crew game, so the evidence is dealt out too', () => {
+    expect(newTestGame({ generators, splitPuzzles: true }).split).toBe(true)
+  })
+
+  it.each([
+    ['quick', 2],
+    ['full', 3],
+    ['deep', 4],
+  ] as const)('splits about one system in three in a %s crew game', (id, expected) => {
+    const game = newTestGame({
+      generators: [splitNumberGenerator('split')],
+      difficulty: difficulty(id),
+      splitPuzzles: true,
+    })
+    expect(splitSystems(game)).toHaveLength(expected)
+  })
+
+  it('only splits puzzle types that can be split', () => {
+    for (let seed = 0; seed < 50; seed++) {
+      const game = newTestGame({ seed, generators, splitPuzzles: true })
+      expect(splitSystems(game).every((s) => s.puzzle.kind === 'split')).toBe(true)
+    }
+  })
+
+  it('shows the pieces instead of the whole puzzle, and keeps the answer', () => {
+    const game = newTestGame({ generators, splitPuzzles: true })
+    const [system] = splitSystems(game)
+    expect(system!.puzzle).toMatchObject({ prompt: 'Put the two digits together' })
+    expect(system!.puzzle.display).toBeUndefined()
+    expect(system!.puzzle.pieces!.map((p) => p.display).join('')).toBe(system!.puzzle.answer)
+    expect(game.systems.some((s) => 'split' in s.puzzle)).toBe(false)
+  })
+
+  it('does not change the puzzles themselves, only how they are shown', () => {
+    const answers = (game: GameState) => game.systems.map((s) => s.puzzle.answer)
+    for (let seed = 0; seed < 20; seed++) {
+      expect(answers(newTestGame({ seed, generators, splitPuzzles: true }))).toEqual(
+        answers(newTestGame({ seed, generators })),
+      )
+    }
   })
 })
 

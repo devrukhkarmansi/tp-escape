@@ -209,6 +209,11 @@ export const spaceStation: ThemePack = {
       'The emergency buoy is repeating a message',
     ],
     gauge: ['Pressure gauges', 'Coolant temperature dials', 'Reactor output meters'],
+    wiring: [
+      'A junction panel hangs open, wires exposed',
+      'The relay housing is unbolted and the loom is showing',
+      'Someone left the breaker panel half-stripped',
+    ],
   },
 
   // See docs/story-space-station.md. HALCYON is calm and literal, never evil: it's following orders.
