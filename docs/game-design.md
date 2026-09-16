@@ -127,7 +127,7 @@ Each stage ends with something playable, and each one teaches something new.
 | **3. Multiplayer**         | Crew codes, joining, live sync, rejoin, first-correct-answer-wins. Plan: [multiplayer.md](multiplayer.md)   | Firestore modeling, live listeners, transactions, anonymous auth |
 | **3½. Sound** ✅           | Timer ticks in the last minute, alert chimes, solve/wrong tones, win/lose stings, a mute button             | Web Audio API (sounds generated in code, no audio files)         |
 | **4. Co-op and story**     | Private intel, split puzzles, timed story beats, the twist, the random-traitor finale                       | Security rules, event scheduling                                 |
-| **5. Polish and playtest** | Awards ✅, animations, real playtest with 2+ phones                                                         | Motion (animation library)                                       |
+| **5. Polish and playtest** | Awards ✅, animations ✅, real playtest with 2+ phones                                                      | Motion (animation library)                                       |
 | **Later**                  | Theme picker, more puzzle types, live AI puzzles                                                            | Serverless functions, LLM APIs                                   |
 
 ## Still to write (content, not code)

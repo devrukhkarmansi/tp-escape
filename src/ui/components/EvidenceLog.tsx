@@ -1,3 +1,4 @@
+import { motion } from 'motion/react'
 import type { EvidenceCard } from '../../engine/mystery.ts'
 import { playerColor } from '../crew-ui.ts'
 import { EVIDENCE_LABELS } from '../labels.ts'
@@ -36,8 +37,12 @@ export default function EvidenceLog({ cards, total }: Props) {
           {cards.map(({ id, systemName, card, holder }) => {
             const kind = EVIDENCE_LABELS[card.kind]
             return (
-              <li
+              <motion.li
                 key={id}
+                layout
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
                 className={`rounded-xl px-4 py-3 ${holder ? 'border border-dashed border-line' : 'border border-line bg-panel/40'}`}
               >
                 <span className="flex items-center gap-2">
@@ -63,7 +68,7 @@ export default function EvidenceLog({ cards, total }: Props) {
                 ) : (
                   <span className="mt-1.5 block text-sm/6">{card.text}</span>
                 )}
-              </li>
+              </motion.li>
             )
           })}
         </ul>

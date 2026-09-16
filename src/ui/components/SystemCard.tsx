@@ -1,3 +1,4 @@
+import { motion, useReducedMotion } from 'motion/react'
 import { isFinale, type StationSystem, type SystemStatus } from '../../engine/game.ts'
 import { playerColor } from '../crew-ui.ts'
 import { puzzleKindLabel } from '../labels.ts'
@@ -21,14 +22,21 @@ type Props = {
 }
 
 export default function SystemCard({ system, selected, onSelect, viewers = [], split }: Props) {
+  const still = useReducedMotion()
   const tag = STATUS_TAG[system.status]
   const locked = system.status === 'locked'
 
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onSelect}
       disabled={locked}
+      // Remounting on a status change replays this: a system coming online glows once, then fades.
+      key={system.status}
+      initial={still || locked ? false : { backgroundColor: 'rgba(45, 212, 191, 0.18)' }}
+      animate={{ backgroundColor: 'rgba(0, 0, 0, 0)' }}
+      transition={{ duration: 1.2, ease: 'easeOut' }}
+      whileTap={locked || still ? undefined : { scale: 0.99 }}
       aria-current={selected ? 'true' : undefined}
       className={`flex min-h-16 w-full items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
         selected
@@ -73,6 +81,6 @@ export default function SystemCard({ system, selected, onSelect, viewers = [], s
       >
         {tag.text}
       </span>
-    </button>
+    </motion.button>
   )
 }

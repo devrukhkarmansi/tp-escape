@@ -1,3 +1,4 @@
+import { AnimatePresence } from 'motion/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   alertLevel,
@@ -340,9 +341,11 @@ export default function GameScreen({
         aria-live="polite"
         className="pointer-events-none fixed inset-x-0 bottom-4 z-30 flex flex-col items-center gap-2 px-4"
       >
-        {toasts.map((toast) => (
-          <Toast key={toast.id} id={toast.id} text={toast.text} onDone={dismissToast} />
-        ))}
+        <AnimatePresence initial={false}>
+          {toasts.map((toast) => (
+            <Toast key={toast.id} id={toast.id} text={toast.text} onDone={dismissToast} />
+          ))}
+        </AnimatePresence>
       </div>
 
       {showing && (
