@@ -7,7 +7,9 @@
 
 A crew of 1–6 plays **one shared game from their own phones or laptops**. The host creates a crew, the others join with a link or a code, and everyone sees the same board live. Anyone can work on any open system, and when someone solves one, it updates on every screen within about a second.
 
-**Not in stage 3:** private intel and split puzzles, story beats, the traitor finale (all stage 4); the rest of the sound, meaning alert chimes and solve/wrong tones (stage 3½, straight after; final-minute ticking already shipped in #12); named awards (stage 5). **Play solo** keeps working exactly as it does today, with no Firebase and no network needed.
+**Tested end to end:** `npm run test:e2e` plays a real crew game in two browsers against the emulators — host, join, launch, solve, and a split puzzle with one piece on each screen. It runs on every pull request.
+
+**Not in stage 3:** private intel and split puzzles, story beats, the traitor finale (all stage 4); the rest of the sound (alert chimes and solve/wrong tones) shipped in stage 3½; named awards (stage 5). **Play solo** keeps working exactly as it does today, with no Firebase and no network needed.
 
 ## How it plays
 

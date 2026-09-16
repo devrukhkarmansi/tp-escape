@@ -40,11 +40,33 @@ describe('space station content', () => {
 
   it('has riddles with distinct answers, each accepted by the checker, each with 2 hints', () => {
     const riddles = spaceStation.riddles
-    expect(riddles.length).toBeGreaterThanOrEqual(12)
+    // v1 aims for 30 riddles, so a crew rarely sees the same one twice (docs/puzzle-system.md).
+    expect(riddles.length).toBeGreaterThanOrEqual(30)
     expect(new Set(riddles.map((r) => normalizeAnswer(r.answer))).size).toBe(riddles.length)
     for (const r of riddles) {
       expect(checkAnswer(r, r.answer), r.question).toBe(true)
       expect(r.hints.length, r.question).toBeGreaterThanOrEqual(2)
+    }
+  })
+
+  it('asks a real question, and keeps answers short enough to type on a phone', () => {
+    for (const riddle of spaceStation.riddles) {
+      expect(riddle.question.trim().endsWith('?'), riddle.question).toBe(true)
+      expect(riddle.answer.length, riddle.answer).toBeLessThanOrEqual(14)
+    }
+  })
+
+  it('never accepts one riddle’s answer as another riddle’s', () => {
+    const byAnswer = new Map(
+      spaceStation.riddles.map((riddle) => [normalizeAnswer(riddle.answer), riddle.question]),
+    )
+    for (const riddle of spaceStation.riddles) {
+      for (const alt of riddle.altAnswers ?? []) {
+        const clash = byAnswer.get(normalizeAnswer(alt))
+        expect(clash ?? riddle.question, `${riddle.question} also accepts "${alt}"`).toBe(
+          riddle.question,
+        )
+      }
     }
   })
 

@@ -176,6 +176,97 @@ export const spaceStation: ThemePack = {
       answer: 'silence',
       hints: ["It's what this station has been for three hours.", 'Shh.'],
     },
+    {
+      question:
+        'I copy every move you make in the daylight, and vanish the moment the lights go out. What am I?',
+      answer: 'shadow',
+      hints: ['You need a light behind you to make one.', 'It lies flat on the floor.'],
+    },
+    {
+      question:
+        'Look at me and you see yourself, but everything you do comes back the wrong way round. What am I?',
+      answer: 'mirror',
+      hints: ['Every crew cabin has one.', 'Raise your right hand and it raises its left.'],
+    },
+    {
+      question:
+        'I have a bed but never sleep, a mouth but never speak, and I run without legs. What am I?',
+      answer: 'river',
+      hints: ['On Earth, it ends at the sea.', 'It carries boats.'],
+    },
+    {
+      question: 'I am full of holes, but I still hold water. What am I?',
+      answer: 'sponge',
+      hints: ['You find one by a sink.', 'Squeeze it and the water comes back out.'],
+    },
+    {
+      question: 'I go up and I go down, but I never move from where I am. What am I?',
+      answer: 'stairs',
+      altAnswers: ['staircase', 'a staircase'],
+      hints: ['A lift does the same job.', 'You climb them.'],
+    },
+    {
+      question:
+        'You cannot see me, but you can feel me push. On this station you would be glad I am gone. What am I?',
+      answer: 'wind',
+      altAnswers: ['the wind', 'breeze'],
+      hints: ['It fills a sail.', 'Weather forecasts measure its speed.'],
+    },
+    {
+      question:
+        'I have seas without water, craters without rain, and footprints that never wash away. What am I?',
+      answer: 'moon',
+      altAnswers: ['the moon'],
+      hints: ['You can see it from a window at night.', 'Twelve people have stood on it.'],
+    },
+    {
+      question:
+        'I pull on everything, day and night, and you only notice when I let go. What am I?',
+      answer: 'gravity',
+      hints: ['It is what keeps your feet on the floor.', 'Astronauts float without it.'],
+    },
+    {
+      question: 'Feed me and I grow. Give me a drink and I die. What am I?',
+      answer: 'fire',
+      altAnswers: ['a fire', 'flame'],
+      hints: ['It needs oxygen.', 'Every airlock has an extinguisher for it.'],
+    },
+    {
+      question: 'I am water that has forgotten how to move. Hold me and I slip away. What am I?',
+      answer: 'ice',
+      hints: ['It floats in a drink.', 'Warm it and it turns back.'],
+    },
+    {
+      question: 'I have five fingers but no bones, and I am useless on my own. What am I?',
+      answer: 'glove',
+      altAnswers: ['a glove'],
+      hints: ['They come in pairs.', 'Part of a spacesuit.'],
+    },
+    {
+      question: 'I have teeth, but I have never eaten a thing. What am I?',
+      answer: 'comb',
+      altAnswers: ['a comb'],
+      hints: ['You keep it with your washing kit.', 'It sorts out your hair.'],
+    },
+    {
+      question: 'The more you take away from me, the bigger I get. What am I?',
+      answer: 'hole',
+      altAnswers: ['a hole'],
+      hints: ['Dig and it grows.', 'A hull breach is a very bad one.'],
+    },
+    {
+      question:
+        'I am a wall you can see straight through, and the cold side is not the side you want to be on. What am I?',
+      answer: 'window',
+      altAnswers: ['a window', 'viewport'],
+      hints: ['It is made of glass.', 'The stars are on the other side.'],
+    },
+    {
+      question: 'I am a room you wear, with your own air inside. What am I?',
+      answer: 'spacesuit',
+      altAnswers: ['space suit', 'suit', 'a spacesuit'],
+      hints: ['You put it on before an airlock.', 'It has a helmet.'],
+    },
   ],
 
   flavor: {

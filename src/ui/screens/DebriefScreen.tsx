@@ -1,3 +1,5 @@
+import { motion } from 'motion/react'
+import { awardsFor } from '../../engine/awards.ts'
 import { isFinale, timeLeftMs, type GameState } from '../../engine/game.ts'
 import { POINTS, scoreGame } from '../../engine/score.ts'
 import { endingFor } from '../../engine/story.ts'
@@ -16,6 +18,8 @@ type Props = {
   hostName?: string
   /** Crew only: turns a player id into a name, for "restored by". */
   solverName?: (playerId: string | undefined) => string
+  /** Crew only: how many players were in the crew, so crew awards can be handed out. */
+  crewSize?: number
   homeLabel: string
 }
 
@@ -26,6 +30,7 @@ export default function DebriefScreen({
   canPlayAgain,
   hostName,
   solverName,
+  crewSize = 1,
   homeLabel,
 }: Props) {
   const won = game.status === 'won'
@@ -39,6 +44,8 @@ export default function DebriefScreen({
 
   const { suspects } = THEME.mystery
   const culprit = suspects.find((s) => s.id === game.mystery.culpritId)
+
+  const awards = awardsFor(game, crewSize)
 
   const rows = [
     { label: `Systems restored (${solved} × ${POINTS.perSystem})`, points: score.systems },
@@ -104,6 +111,37 @@ export default function DebriefScreen({
               <dd className="text-lg tabular-nums">{score.total}</dd>
             </div>
           </dl>
+
+          {awards.length > 0 && (
+            <section aria-labelledby="awards" className="mt-8">
+              <h2
+                id="awards"
+                className="mb-3 font-display text-[11px] tracking-[0.14em] text-ink-muted uppercase"
+              >
+                Commendations
+              </h2>
+              <ul className="grid gap-2 sm:grid-cols-2">
+                {awards.map((award, index) => (
+                  <motion.li
+                    key={award.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    // One after another, so the crew reads them rather than scanning past.
+                    transition={{ duration: 0.3, delay: index * 0.12, ease: 'easeOut' }}
+                    className="rounded-xl border border-nominal/30 bg-nominal/5 px-4 py-3"
+                  >
+                    <p className="font-display text-sm font-bold text-nominal">
+                      ★ {award.title}
+                      {award.playerId && solverName && (
+                        <span className="text-ink"> · {solverName(award.playerId)}</span>
+                      )}
+                    </p>
+                    <p className="mt-1 text-sm/6 text-ink-muted">{award.description}</p>
+                  </motion.li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             {canPlayAgain ? (

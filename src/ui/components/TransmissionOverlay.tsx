@@ -1,3 +1,4 @@
+import { motion, useReducedMotion } from 'motion/react'
 import { useEffect, useState } from 'react'
 import type { StoryBeat } from '../../engine/story.ts'
 import type { Transmission } from '../../engine/theme.ts'
@@ -21,6 +22,7 @@ export default function TransmissionOverlay({ beat, transmission, onClose }: Pro
   const [typed, setTyped] = useState(() => (prefersReducedMotion() ? text.length : 0))
   const tone = BEAT_TONES[beat]
   const titleId = `transmission-${beat}`
+  const still = useReducedMotion()
 
   useEffect(() => {
     if (typed >= text.length) return
@@ -37,13 +39,20 @@ export default function TransmissionOverlay({ beat, transmission, onClose }: Pro
   }, [onClose])
 
   return (
-    <div
+    <motion.div
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2 }}
       className="fixed inset-0 z-40 flex items-center justify-center bg-void/85 px-5 backdrop-blur-sm"
     >
-      <div
+      {/* The panel rises in, unless the player asked for less motion. */}
+      <motion.div
+        initial={still ? false : { opacity: 0, y: 16, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.28, ease: 'easeOut' }}
         className={`w-full max-w-lg rounded-2xl border bg-panel p-6 shadow-2xl shadow-black/60 sm:p-8 ${tone.border}`}
       >
         <p
@@ -72,7 +81,7 @@ export default function TransmissionOverlay({ beat, transmission, onClose }: Pro
         >
           Continue
         </button>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }

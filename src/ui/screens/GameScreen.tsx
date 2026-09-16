@@ -1,3 +1,4 @@
+import { AnimatePresence } from 'motion/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   alertLevel,
@@ -29,7 +30,15 @@ import { useNow } from '../hooks/use-now.ts'
 import { useSoundSetting } from '../hooks/use-sound-setting.ts'
 import { evidenceHolders, piecesFor } from '../pieces.ts'
 import { THEME } from '../solo-game.ts'
-import { playTick, playTimeUp, playTransmission } from '../sound.ts'
+import {
+  playAlert,
+  playLaunch,
+  playSolved,
+  playTick,
+  playTimeUp,
+  playTransmission,
+  playWrong,
+} from '../sound.ts'
 import { loadSeenBeats, saveSeenBeats } from '../story-seen.ts'
 import DebriefScreen from './DebriefScreen.tsx'
 
@@ -115,12 +124,25 @@ export default function GameScreen({
     if (finalMinute && soundOn) playTick(secondsLeft <= URGENT_SECONDS)
   }, [finalMinute, soundOn, secondsLeft])
 
-  // The alarm plays once, at the moment the game goes from playing to lost.
+  // The alarm and the launch sting each play once, as the game ends.
   const previousStatus = useRef(game.status)
   useEffect(() => {
-    if (previousStatus.current === 'playing' && game.status === 'lost' && soundOn) playTimeUp()
+    if (previousStatus.current === 'playing' && soundOn) {
+      if (game.status === 'lost') playTimeUp()
+      if (game.status === 'won') playLaunch()
+    }
     previousStatus.current = game.status
   }, [game.status, soundOn])
+
+  // A chime each time the station drops to a worse alert level, so nobody has to watch the clock.
+  const level = alertLevel(game, now)
+  const previousLevel = useRef(level)
+  useEffect(() => {
+    if (level !== previousLevel.current && level !== 'nominal' && playing && soundOn) {
+      playAlert(level === 'critical')
+    }
+    previousLevel.current = level
+  }, [level, playing, soundOn])
 
   // In a crew, say when a teammate restores a system.
   const seenSolved = useRef(
@@ -131,6 +153,7 @@ export default function GameScreen({
       (s) => s.status === 'solved' && !seenSolved.current.has(s.id),
     )
     for (const system of newlySolved) seenSolved.current.add(system.id)
+    if (newlySolved.length > 0 && soundOn) playSolved()
     if (!crew) return
     const byOthers = newlySolved.filter((s) => s.solvedBy && s.solvedBy !== playerId)
     if (byOthers.length === 0) return
@@ -142,7 +165,7 @@ export default function GameScreen({
         text: `${names.get(s.solvedBy!) ?? 'A teammate'} restored ${s.name}`,
       })),
     ])
-  }, [game.systems, crew, playerId])
+  }, [game.systems, crew, playerId, soundOn])
 
   if (!playing) {
     return (
@@ -153,12 +176,12 @@ export default function GameScreen({
         canPlayAgain={isHost}
         hostName={hostName}
         solverName={crew ? nameOf : undefined}
+        crewSize={crew?.players.length ?? 1}
         homeLabel={crew ? 'Leave crew' : 'Back to home'}
       />
     )
   }
 
-  const level = alertLevel(game, now)
   const selected = game.systems.find((s) => s.id === selectedId)
   const piecesOf = (system: StationSystem) =>
     piecesFor(game, game.systems.indexOf(system), playerId, crew?.players, now)
@@ -281,6 +304,7 @@ export default function GameScreen({
                 store.dispatch({ type: 'accuse', suspectId, code, playerId, at: clock() })
               }
               onHint={() => store.dispatch({ type: 'hint', systemId: selected.id, at: clock() })}
+              onWrong={() => soundOn && playWrong()}
             />
           ) : selected ? (
             <SystemPanel
@@ -299,6 +323,7 @@ export default function GameScreen({
                 })
               }
               onHint={() => store.dispatch({ type: 'hint', systemId: selected.id, at: clock() })}
+              onWrong={() => soundOn && playWrong()}
             />
           ) : (
             <div className="hidden min-h-80 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-line p-8 text-center lg:flex">
@@ -316,9 +341,11 @@ export default function GameScreen({
         aria-live="polite"
         className="pointer-events-none fixed inset-x-0 bottom-4 z-30 flex flex-col items-center gap-2 px-4"
       >
-        {toasts.map((toast) => (
-          <Toast key={toast.id} id={toast.id} text={toast.text} onDone={dismissToast} />
-        ))}
+        <AnimatePresence initial={false}>
+          {toasts.map((toast) => (
+            <Toast key={toast.id} id={toast.id} text={toast.text} onDone={dismissToast} />
+          ))}
+        </AnimatePresence>
       </div>
 
       {showing && (
