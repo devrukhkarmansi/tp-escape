@@ -1,4 +1,6 @@
 import type { Rng } from './rng.ts'
+import type { AnomalyTell } from './puzzles/anomaly.ts'
+import type { RoutingGrid } from './routing.ts'
 import type { ThemePack } from './theme.ts'
 
 /** Puzzles that need a picture rather than text. The screen draws these; the engine only describes them. */
@@ -22,6 +24,14 @@ export type PuzzleVisual =
       firstDial?: number
     }
   | WiringVisual
+  /** A cable grid to turn tile by tile until the reactor reaches the module. */
+  | { type: 'routing'; grid: RoutingGrid }
+  /** Pads that flash and beep a pattern to play back. `pattern` holds pad indexes. */
+  | { type: 'memory'; pattern: number[]; pads: number; unitMs: number }
+  /** A letter ring to turn against a fixed one until the coded message reads. */
+  | { type: 'wheel'; coded: string }
+  /** A scope of contacts with one odd one out. The screen lays the field out itself. */
+  | { type: 'anomaly'; tell: AnomalyTell; contacts: number; code: string }
 
 /**
  * One part of a split puzzle, such as the coded message or its key. In a crew each piece is dealt

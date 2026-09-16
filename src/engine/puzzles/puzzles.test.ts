@@ -2,15 +2,20 @@ import { describe, expect, it } from 'vitest'
 import { checkAnswer } from '../check-answer.ts'
 import type { GeneratedPuzzle, PuzzleGenerator } from '../puzzle.ts'
 import { createRng } from '../rng.ts'
+import { routeCode } from '../routing.ts'
 import { testTheme } from '../test-fixtures.ts'
 import { anagram } from './anagram.ts'
+import { anomaly, sweepScope } from './anomaly.ts'
 import { caesar, shiftLetters } from './caesar.ts'
 import { PUZZLE_GENERATORS } from './index.ts'
 import { gauge } from './gauge.ts'
 import { glyph } from './glyph.ts'
+import { memory } from './memory.ts'
 import { MORSE, morse, toMorse } from './morse.ts'
 import { riddle } from './riddle.ts'
+import { routing } from './routing.ts'
 import { sequence } from './sequence.ts'
+import { wheel } from './wheel.ts'
 import { WIRE_COLORS, wiring } from './wiring.ts'
 
 const SEEDS = Array.from({ length: 1000 }, (_, i) => i * 7919 + 1)
@@ -415,5 +420,212 @@ describe('wiring', () => {
     const [first] = puzzles
     const cut = Number(first!.answer)
     expect(checkAnswer(first!, `wire ${cut}`)).toBe(true)
+  })
+})
+
+describe('routing', () => {
+  const gridOf = (p: Generated) => {
+    if (p.visual?.type !== 'routing') throw new Error('expected a cable grid')
+    return p.visual.grid
+  }
+  const puzzles = everyPuzzle(routing)
+
+  it('never starts already connected, so there is always something to do', () => {
+    expect(failing(puzzles, (p) => routeCode(gridOf(p)) === '')).toEqual([])
+  })
+
+  it('can always be connected by turning tiles, and that spells the answer', () => {
+    expect(
+      failing(puzzles, (p) => {
+        // The run was laid out with every tile unturned, so that position must connect.
+        const grid = gridOf(p)
+        const laidOut = { ...grid, tiles: grid.tiles.map((tile) => ({ ...tile, turns: 0 })) }
+        return routeCode(laidOut) === p.answer && p.answer.length > 0
+      }),
+    ).toEqual([])
+  })
+
+  it('gives every tile exactly two ends, so power never hits a fork', () => {
+    expect(
+      failing(puzzles, (p) =>
+        gridOf(p).tiles.every(
+          (tile) => [...tile.mask.toString(2)].filter((b) => b === '1').length === 2,
+        ),
+      ),
+    ).toEqual([])
+  })
+
+  it('grows from a 3×3 grid to 4×4 as the shift goes on', () => {
+    const size = (level: number) => everyPuzzle(routing, [level]).map((p) => gridOf(p))
+    expect(new Set(size(0).map((g) => `${g.columns}x${g.rows}`))).toEqual(new Set(['3x3']))
+    expect(new Set(size(1).map((g) => `${g.columns}x${g.rows}`))).toEqual(new Set(['4x4']))
+  })
+
+  it('answers with digits only, so the keypad fits it', () => {
+    expect(failing(puzzles, (p) => /^\d+$/.test(p.answer))).toEqual([])
+  })
+})
+
+describe('memory', () => {
+  const patternOf = (p: Generated) => {
+    if (p.visual?.type !== 'memory') throw new Error('expected memory pads')
+    return p.visual
+  }
+  const puzzles = everyPuzzle(memory)
+
+  it('answers with the pads in order, counting from 1', () => {
+    expect(
+      failing(
+        puzzles,
+        (p) =>
+          patternOf(p)
+            .pattern.map((pad) => pad + 1)
+            .join('') === p.answer,
+      ),
+    ).toEqual([])
+  })
+
+  it('never flashes the same pad twice in a row, which would look like one long flash', () => {
+    expect(
+      failing(puzzles, (p) =>
+        patternOf(p).pattern.every((pad, index, all) => index === 0 || pad !== all[index - 1]),
+      ),
+    ).toEqual([])
+  })
+
+  it('only uses pads that are on screen', () => {
+    expect(
+      failing(puzzles, (p) => {
+        const { pattern, pads } = patternOf(p)
+        return pattern.every((pad) => pad >= 0 && pad < pads)
+      }),
+    ).toEqual([])
+  })
+
+  it('gets longer and faster as the shift goes on', () => {
+    const shape = (level: number) => everyPuzzle(memory, [level]).map(patternOf)
+    expect(new Set(shape(0).map((v) => v.pattern.length))).toEqual(new Set([4]))
+    expect(new Set(shape(0.5).map((v) => v.pattern.length))).toEqual(new Set([5]))
+    expect(new Set(shape(1).map((v) => v.pattern.length))).toEqual(new Set([6]))
+    expect(Math.max(...shape(1).map((v) => v.unitMs))).toBeLessThan(
+      Math.min(...shape(0).map((v) => v.unitMs)),
+    )
+  })
+
+  it('tells the crew the pattern in its last hint', () => {
+    expect(
+      failing(puzzles, (p) => {
+        const spoken = patternOf(p)
+          .pattern.map((pad) => pad + 1)
+          .join(' – ')
+        return p.hints.at(-1)!.includes(spoken)
+      }),
+    ).toEqual([])
+  })
+})
+
+describe('wheel', () => {
+  const codedOf = (p: Generated) => {
+    if (p.visual?.type !== 'wheel') throw new Error('expected a cipher wheel')
+    return p.visual.coded
+  }
+  const puzzles = everyPuzzle(wheel)
+
+  it('can be read by turning the ring, and only at one setting', () => {
+    expect(
+      failing(puzzles, (p) => {
+        const readings = Array.from({ length: 26 }, (_, turn) =>
+          shiftLetters(codedOf(p), -turn),
+        ).filter((reading) => reading === p.answer)
+        return readings.length === 1
+      }),
+    ).toEqual([])
+  })
+
+  it('never hands over a message that already reads as the answer', () => {
+    expect(failing(puzzles, (p) => codedOf(p) !== p.answer)).toEqual([])
+  })
+
+  it('says how far the ring is out in its last hint, and that really decodes it', () => {
+    expect(
+      failing(puzzles, (p) => {
+        const steps = Number(/ring is (\d+) steps out/.exec(p.hints.at(-1)!)?.[1])
+        return shiftLetters(codedOf(p), -steps) === p.answer
+      }),
+    ).toEqual([])
+  })
+
+  it('uses longer words later in the game', () => {
+    const lengths = (level: number) => everyPuzzle(wheel, [level]).map((p) => p.answer.length)
+    expect(Math.max(...lengths(0))).toBeLessThanOrEqual(6)
+    expect(Math.min(...lengths(1))).toBeGreaterThanOrEqual(7)
+  })
+})
+
+describe('anomaly', () => {
+  const scopeOf = (p: Generated) => {
+    if (p.visual?.type !== 'anomaly') throw new Error('expected a scope')
+    return p.visual
+  }
+  const puzzles = everyPuzzle(anomaly)
+
+  it('answers with the sector code the anomaly carries', () => {
+    expect(
+      failing(puzzles, (p) => scopeOf(p).code === p.answer && /^\d\d$/.test(p.answer)),
+    ).toEqual([])
+  })
+
+  it('says what to look for early, and stops saying it later', () => {
+    expect(everyPuzzle(anomaly, [0]).filter((p) => !p.prompt.includes('One contact is'))).toEqual(
+      [],
+    )
+    expect(everyPuzzle(anomaly, [1]).filter((p) => p.prompt.includes('One contact is a'))).toEqual(
+      [],
+    )
+  })
+
+  it('uses the plainest tell early and the subtlest late', () => {
+    const tells = (level: number) =>
+      new Set(everyPuzzle(anomaly, [level]).map((p) => scopeOf(p).tell))
+    // Early: colour only. Mid: colour or size. Late: size, or the hardest tell of all — a contact
+    // that doesn't pulse when everything else does.
+    expect(tells(0)).toEqual(new Set(['colour']))
+    expect(tells(0.5)).toEqual(new Set(['size', 'colour']))
+    expect(tells(1)).toEqual(new Set(['still', 'size']))
+  })
+
+  it('fills the scope with more contacts as the shift goes on', () => {
+    const counts = (level: number) => everyPuzzle(anomaly, [level]).map((p) => scopeOf(p).contacts)
+    expect(Math.max(...counts(0))).toBeLessThan(Math.min(...counts(1)))
+    expect(Math.max(...counts(0.5))).toBeLessThan(Math.min(...counts(1)))
+  })
+})
+
+describe('the anomaly scope', () => {
+  it('shows every phone the same field, so a crew can point at it', () => {
+    expect(sweepScope('42', 3, 20)).toEqual(sweepScope('42', 3, 20))
+  })
+
+  it('sweeps somewhere new each time', () => {
+    const first = sweepScope('42', 0, 20)
+    const second = sweepScope('42', 1, 20)
+    expect(
+      second.oddIndex === first.oddIndex && second.contacts[0]!.x === first.contacts[0]!.x,
+    ).toBe(false)
+  })
+
+  it('keeps every contact on the scope, and marks exactly one anomaly', () => {
+    for (let sweep = 0; sweep < 50; sweep++) {
+      const { contacts, oddIndex } = sweepScope('73', sweep, 26)
+      expect(contacts).toHaveLength(26)
+      expect(oddIndex).toBeGreaterThanOrEqual(0)
+      expect(oddIndex).toBeLessThan(26)
+      for (const contact of contacts) {
+        expect(contact.x).toBeGreaterThan(0)
+        expect(contact.x).toBeLessThan(100)
+        expect(contact.y).toBeGreaterThan(0)
+        expect(contact.y).toBeLessThan(100)
+      }
+    }
   })
 })

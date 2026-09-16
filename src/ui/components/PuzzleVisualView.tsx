@@ -1,17 +1,23 @@
 import type { PuzzleVisual } from '../../engine/puzzle.ts'
 import GaugeDial from './GaugeDial.tsx'
+import AnomalyField from './AnomalyField.tsx'
+import CipherWheel from './CipherWheel.tsx'
 import GlyphSymbol from './GlyphSymbol.tsx'
+import MemoryPads from './MemoryPads.tsx'
 import MorseBeacon, { MorseChart } from './MorseBeacon.tsx'
+import RoutingGridView from './RoutingGridView.tsx'
 import WiringPanel, { RepairManual } from './WiringPanel.tsx'
 
 type Props = {
   visual: PuzzleVisual
   /** Lets a picture answer the puzzle directly, such as cutting a wire. */
   onAnswer?: (answer: string) => void
+  /** Lets a picture fill the answer box without sending it, such as turning a cipher wheel. */
+  onDraft?: (value: string) => void
 }
 
 /** Draws the puzzles that need a picture rather than text. */
-export default function PuzzleVisualView({ visual, onAnswer }: Props) {
+export default function PuzzleVisualView({ visual, onAnswer, onDraft }: Props) {
   switch (visual.type) {
     case 'glyphs':
       // A split glyph puzzle has the inscription on one screen and the key on another.
@@ -71,6 +77,32 @@ export default function PuzzleVisualView({ visual, onAnswer }: Props) {
           {visual.rules.length > 0 && <RepairManual rules={visual.rules} />}
         </div>
       )
+
+    case 'anomaly':
+      return (
+        <AnomalyField
+          tell={visual.tell}
+          contacts={visual.contacts}
+          code={visual.code}
+          onAnswer={onAnswer}
+        />
+      )
+
+    case 'wheel':
+      return <CipherWheel coded={visual.coded} onDraft={onDraft} />
+
+    case 'memory':
+      return (
+        <MemoryPads
+          pattern={visual.pattern}
+          pads={visual.pads}
+          unitMs={visual.unitMs}
+          onAnswer={onAnswer}
+        />
+      )
+
+    case 'routing':
+      return <RoutingGridView grid={visual.grid} onAnswer={onAnswer} />
 
     case 'gauges':
       return (

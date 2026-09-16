@@ -2,7 +2,9 @@ import { useState, type FormEvent } from 'react'
 import { checkAnswer } from '../../engine/check-answer.ts'
 import type { StationSystem } from '../../engine/game.ts'
 import { POINTS } from '../../engine/score.ts'
+import { answerMode, tilesFor } from '../answer-input.ts'
 import { displayClass, puzzleKindLabel } from '../labels.ts'
+import AnswerPad from './AnswerPad.tsx'
 import PuzzlePieces, { type PieceView } from './PuzzlePieces.tsx'
 import PuzzleVisualView from './PuzzleVisualView.tsx'
 
@@ -40,6 +42,7 @@ export default function SystemPanel({
   const hintsLeft = puzzle.hints.length - system.hintsUsed
   const titleId = `${system.id}-title`
   const inputId = `${system.id}-answer`
+  const mode = answerMode(puzzle)
 
   /** Both ways of answering end up here: typing one in, or tapping something in the picture. */
   function answerWith(value: string) {
@@ -54,6 +57,12 @@ export default function SystemPanel({
       setShaking(true)
       onWrong?.()
     }
+  }
+
+  /** A picture can fill the answer box; sending it is still the crew's call. */
+  function draft(value: string) {
+    setAnswer(value)
+    setWrong(false)
   }
 
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -92,7 +101,11 @@ export default function SystemPanel({
           onAnswer={solved ? undefined : answerWith}
         />
       ) : puzzle.visual ? (
-        <PuzzleVisualView visual={puzzle.visual} onAnswer={solved ? undefined : answerWith} />
+        <PuzzleVisualView
+          visual={puzzle.visual}
+          onAnswer={solved ? undefined : answerWith}
+          onDraft={solved ? undefined : draft}
+        />
       ) : (
         puzzle.display && (
           <p
@@ -143,10 +156,13 @@ export default function SystemPanel({
                 setWrong(false)
               }}
               autoComplete="off"
-              autoCapitalize="none"
+              autoCapitalize="characters"
               autoCorrect="off"
               spellCheck={false}
               enterKeyHint="go"
+              // A pad is on screen, so don't let the phone's keyboard cover the puzzle. A laptop
+              // keyboard still types into this box.
+              inputMode={mode === 'text' ? 'text' : 'none'}
               aria-invalid={wrong}
               aria-describedby={`${inputId}-feedback`}
               className={`min-h-12 min-w-0 flex-1 rounded-xl border bg-void/60 px-4 font-display text-base tracking-wide ${
@@ -167,6 +183,18 @@ export default function SystemPanel({
           >
             {wrong ? 'Access denied. Check your answer and try again.' : ''}
           </p>
+
+          {mode !== 'text' && (
+            <AnswerPad
+              mode={mode}
+              tiles={tilesFor(puzzle)}
+              value={answer}
+              onChange={(next) => {
+                setAnswer(next)
+                setWrong(false)
+              }}
+            />
+          )}
         </form>
       )}
 

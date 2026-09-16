@@ -300,6 +300,26 @@ export const spaceStation: ThemePack = {
       'The emergency buoy is repeating a message',
     ],
     gauge: ['Pressure gauges', 'Coolant temperature dials', 'Reactor output meters'],
+    anomaly: [
+      'The long-range scope is full of contacts',
+      'The debris scope has flagged an alert it cannot name',
+      'Proximity radar is showing more traffic than it should',
+    ],
+    wheel: [
+      'A cipher wheel is bolted to the bulkhead',
+      'The airlock lock is a brass letter ring',
+      'A dial of letters sits beside the hatch, half turned',
+    ],
+    memory: [
+      'The nav array is running its start-up pattern',
+      'The docking lights are repeating a sequence',
+      'The console is playing back its last command',
+    ],
+    routing: [
+      'The power grid is a mess of loose cable',
+      'A conduit panel hangs open, its runs unplugged',
+      'Someone pulled the feeder cables and never put them back',
+    ],
     wiring: [
       'A junction panel hangs open, wires exposed',
       'The relay housing is unbolted and the loom is showing',
