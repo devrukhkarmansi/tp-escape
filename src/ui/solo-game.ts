@@ -17,7 +17,7 @@ function randomSeed(): number {
 export function newGame(
   difficultyId: DifficultyId,
   startedAt: number,
-  { crew = false } = {},
+  { crew = false, crewSize = 1 } = {},
 ): GameState {
   const difficulty = DIFFICULTIES.find((d) => d.id === difficultyId) ?? DIFFICULTIES[1]!
   return createGame({
@@ -27,6 +27,7 @@ export function newGame(
     generators: PUZZLE_GENERATORS,
     startedAt,
     splitPuzzles: crew,
+    crewSize,
   })
 }
 

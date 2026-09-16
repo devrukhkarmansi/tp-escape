@@ -4,7 +4,6 @@ import {
   alertLevel,
   isFinale,
   isPaused,
-  OPEN_AT_ONCE,
   timeLeftMs,
   type GameState,
   type StationSystem,
@@ -23,6 +22,7 @@ import SystemCard, { type Viewer } from '../components/SystemCard.tsx'
 import SystemPanel from '../components/SystemPanel.tsx'
 import Toast from '../components/Toast.tsx'
 import TransmissionLog from '../components/TransmissionLog.tsx'
+import TransmissionBanner from '../components/TransmissionBanner.tsx'
 import TransmissionOverlay from '../components/TransmissionOverlay.tsx'
 import { formatClock } from '../format.ts'
 import { useGame } from '../hooks/use-game.ts'
@@ -99,7 +99,6 @@ export default function GameScreen({
   const [reopened, setReopened] = useState<StoryBeat | null>(null)
   const unseen = due.filter((beat) => !seenBeats.includes(beat))
   const newestUnseen = unseen.at(-1) ?? null
-  const showing = reopened ?? newestUnseen
 
   useEffect(() => {
     if (newestUnseen && soundOn) playTransmission()
@@ -247,6 +246,17 @@ export default function GameScreen({
         />
       ) : (
         <main className="mx-auto w-full max-w-6xl px-5 pt-6 pb-12 lg:grid lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start lg:gap-8 lg:px-8 lg:pt-8">
+          <AnimatePresence>
+            {newestUnseen && (
+              <TransmissionBanner
+                key={newestUnseen}
+                beat={newestUnseen}
+                transmission={storyText(game, newestUnseen)}
+                onClose={closeTransmission}
+              />
+            )}
+          </AnimatePresence>
+
           {finalMinute && (
             <p
               role="alert"
@@ -329,8 +339,8 @@ export default function GameScreen({
             <div className="hidden min-h-80 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-line p-8 text-center lg:flex">
               <p className="font-display text-sm text-ink">Select a system to start repairs</p>
               <p className="max-w-xs text-sm text-ink-muted">
-                Up to {OPEN_AT_ONCE} systems are open at a time. Restoring one brings the next one
-                online.
+                Up to {game.openAtOnce} systems are open at a time. Restoring one brings the next
+                one online.
               </p>
             </div>
           )}
@@ -348,11 +358,12 @@ export default function GameScreen({
         </AnimatePresence>
       </div>
 
-      {showing && (
+      {/* Only a transmission the player opens from the log takes over the screen. */}
+      {reopened && (
         <TransmissionOverlay
-          key={showing}
-          beat={showing}
-          transmission={storyText(game, showing)}
+          key={reopened}
+          beat={reopened}
+          transmission={storyText(game, reopened)}
           onClose={closeTransmission}
         />
       )}

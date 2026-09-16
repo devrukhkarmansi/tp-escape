@@ -3,7 +3,8 @@ import {
   alertLevel,
   applyAction,
   isPaused,
-  OPEN_AT_ONCE,
+  MIN_OPEN_AT_ONCE,
+  openAtOnceFor,
   timeLeftMs,
   type GameState,
 } from './game.ts'
@@ -38,7 +39,7 @@ describe('createGame', () => {
       const tier = difficulty(id)
       const game = newTestGame({ difficulty: tier })
       expect(game.systems).toHaveLength(tier.systems + 1)
-      expect(game.systems.filter((s) => s.status === 'open')).toHaveLength(OPEN_AT_ONCE)
+      expect(game.systems.filter((s) => s.status === 'open')).toHaveLength(MIN_OPEN_AT_ONCE)
       expect(new Set(game.systems.map((s) => s.name)).size).toBe(tier.systems + 1)
       expect(game.systems.at(-1)).toMatchObject({ name: 'Escape Pod', status: 'locked' })
       expect(game.endsAt - game.startedAt).toBe(tier.minutes * MINUTE)
@@ -102,6 +103,43 @@ describe('createGame', () => {
 
   it('refuses to start with no puzzle types', () => {
     expect(() => newTestGame({ generators: [] })).toThrow()
+  })
+})
+
+describe('how much of the board is open', () => {
+  const openCount = (game: GameState) => game.systems.filter((s) => s.status === 'open').length
+
+  it('gives a solo player or a pair three systems', () => {
+    expect(openAtOnceFor(1, 8)).toBe(3)
+    expect(openAtOnceFor(2, 8)).toBe(3)
+    expect(openCount(newTestGame())).toBe(3)
+  })
+
+  it('opens one system per player in a bigger crew, so nobody is left watching', () => {
+    expect(openAtOnceFor(4, 8)).toBe(4)
+    expect(openAtOnceFor(6, 8)).toBe(6)
+    expect(openCount(newTestGame({ crewSize: 4, difficulty: difficulty('full') }))).toBe(4)
+    expect(openCount(newTestGame({ crewSize: 6, difficulty: difficulty('full') }))).toBe(6)
+  })
+
+  it('never opens more systems than the shift has', () => {
+    expect(openAtOnceFor(6, 5)).toBe(5)
+    const game = newTestGame({ crewSize: 6, difficulty: difficulty('quick') })
+    expect(openCount(game)).toBe(5)
+    // The Escape Pod still waits for every other system, however big the crew.
+    expect(game.systems.at(-1)!.status).toBe('locked')
+  })
+
+  it('keeps the board just as open as systems are restored', () => {
+    let game = newTestGame({ crewSize: 4, difficulty: difficulty('full') })
+    game = solve(game, 'system-0')
+    expect(openCount(game)).toBe(4)
+    game = solve(game, 'system-1')
+    expect(openCount(game)).toBe(4)
+  })
+
+  it('remembers the crew size in the game, so every phone agrees', () => {
+    expect(newTestGame({ crewSize: 5, difficulty: difficulty('full') }).openAtOnce).toBe(5)
   })
 })
 
@@ -178,8 +216,8 @@ describe('applyAction: answers', () => {
       solvedBy: 'player-1',
       solvedAt: START + 5_000,
     })
-    expect(next.systems[OPEN_AT_ONCE]!.status).toBe('open')
-    expect(next.systems.filter((s) => s.status === 'open')).toHaveLength(OPEN_AT_ONCE)
+    expect(next.systems[MIN_OPEN_AT_ONCE]!.status).toBe('open')
+    expect(next.systems.filter((s) => s.status === 'open')).toHaveLength(MIN_OPEN_AT_ONCE)
   })
 
   it('ignores answers for locked or already-solved systems', () => {
