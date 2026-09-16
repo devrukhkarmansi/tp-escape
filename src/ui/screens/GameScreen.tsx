@@ -27,7 +27,7 @@ import { formatClock } from '../format.ts'
 import { useGame } from '../hooks/use-game.ts'
 import { useNow } from '../hooks/use-now.ts'
 import { useSoundSetting } from '../hooks/use-sound-setting.ts'
-import { piecesFor } from '../pieces.ts'
+import { evidenceHolders, piecesFor } from '../pieces.ts'
 import { THEME } from '../solo-game.ts'
 import { playTick, playTimeUp, playTransmission } from '../sound.ts'
 import { loadSeenBeats, saveSeenBeats } from '../story-seen.ts'
@@ -251,7 +251,10 @@ export default function GameScreen({
                 </li>
               ))}
             </ul>
-            <EvidenceLog cards={revealedEvidence(game)} total={game.mystery.evidence.length} />
+            <EvidenceLog
+              cards={revealedEvidence(game, evidenceHolders(game, playerId, crew?.players, now))}
+              total={game.mystery.evidence.length}
+            />
             <TransmissionLog
               entries={due.map((beat) => ({ beat, transmission: storyText(game, beat) }))}
               onOpen={setReopened}
@@ -336,13 +339,24 @@ function splitSummary(pieces: readonly PieceView[] | undefined) {
   return { mine: pieces.filter((p) => !p.holder).length, total: pieces.length }
 }
 
-/** Evidence from restored systems, newest first. Card i belongs to system i (board order). */
-function revealedEvidence(game: GameState) {
+/**
+ * Evidence from restored systems, newest first. Card i belongs to system i (board order).
+ * In a crew, each card is dealt to one player; the rest see who has it.
+ */
+function revealedEvidence(game: GameState, holders: (Viewer | null)[] | undefined) {
   return game.systems
     .flatMap((system, index) => {
       const card = game.mystery.evidence[index]
       return card && !isFinale(system) && system.status === 'solved'
-        ? [{ id: system.id, systemName: system.name, card, at: system.solvedAt ?? 0 }]
+        ? [
+            {
+              id: system.id,
+              systemName: system.name,
+              card,
+              holder: holders?.[index] ?? null,
+              at: system.solvedAt ?? 0,
+            },
+          ]
         : []
     })
     .sort((a, b) => b.at - a.at)
