@@ -21,11 +21,15 @@ export type PuzzleVisual =
       labelEvery: number
       firstDial?: number
     }
+  | WiringVisual
 
 /**
  * One part of a split puzzle, such as the coded message or its key. In a crew each piece is dealt
  * to one player, so they have to talk; a player on their own sees every piece.
  */
+/** Wire colours plus the manual's rules. Either list can be empty when the other is a split piece. */
+export type WiringVisual = { type: 'wiring'; wires: string[]; rules: string[] }
+
 export type PuzzlePiece = {
   /** What the piece is, shown to everyone: "Cipher key". */
   label: string

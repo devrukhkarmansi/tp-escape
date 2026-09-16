@@ -7,13 +7,17 @@ import type { Viewer } from './SystemCard.tsx'
 /** A piece of a split puzzle, and who holds it: `null` means this player. */
 export type PieceView = { piece: PuzzlePiece; holder: Viewer | null }
 
-type Props = { kind: string; pieces: readonly PieceView[] }
+type Props = {
+  kind: string
+  pieces: readonly PieceView[]
+  onAnswer?: (answer: string) => void
+}
 
 /**
  * A split puzzle: the pieces you hold, and a placeholder naming who holds each of the others.
  * When you hold every piece (playing alone, or everyone else dropped out) it's the whole puzzle.
  */
-export default function PuzzlePieces({ kind, pieces }: Props) {
+export default function PuzzlePieces({ kind, pieces, onAnswer }: Props) {
   const shared = pieces.some((p) => p.holder)
 
   return (
@@ -61,7 +65,7 @@ export default function PuzzlePieces({ kind, pieces }: Props) {
                 {piece.display}
               </p>
             )}
-            {piece.visual && <PuzzleVisualView visual={piece.visual} />}
+            {piece.visual && <PuzzleVisualView visual={piece.visual} onAnswer={onAnswer} />}
           </section>
         ),
       )}

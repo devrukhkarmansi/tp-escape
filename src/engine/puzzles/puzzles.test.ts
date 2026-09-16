@@ -11,6 +11,7 @@ import { glyph } from './glyph.ts'
 import { MORSE, morse, toMorse } from './morse.ts'
 import { riddle } from './riddle.ts'
 import { sequence } from './sequence.ts'
+import { WIRE_COLORS, wiring } from './wiring.ts'
 
 const SEEDS = Array.from({ length: 1000 }, (_, i) => i * 7919 + 1)
 const LEVELS = [0, 0.5, 1]
@@ -238,7 +239,7 @@ describe('gauge', () => {
 })
 
 describe('split pieces', () => {
-  const splittable = [caesar, glyph, morse, gauge]
+  const splittable = [caesar, glyph, morse, gauge, wiring]
 
   it.each(splittable.map((g) => [g.kind, g] as const))(
     '%s splits into labelled pieces that each show something',
@@ -314,5 +315,89 @@ describe('split pieces', () => {
         return readings.join('') === answer
       }),
     ).toEqual([])
+  })
+})
+
+describe('wiring', () => {
+  const wiringOf = (p: Generated) => {
+    if (p.visual?.type !== 'wiring') throw new Error('expected a wiring panel')
+    return p.visual
+  }
+  const puzzles = everyPuzzle(wiring)
+
+  it('answers with a wire that is really on the panel', () => {
+    expect(
+      failing(puzzles, (p) => {
+        const cut = Number(p.answer)
+        return Number.isInteger(cut) && cut >= 1 && cut <= wiringOf(p).wires.length
+      }),
+    ).toEqual([])
+  })
+
+  it('only uses wire colours the screen can draw', () => {
+    expect(
+      failing(puzzles, (p) => wiringOf(p).wires.every((w) => WIRE_COLORS.includes(w as never))),
+    ).toEqual([])
+  })
+
+  it('always ends the manual with a rule that fits whatever the panel looks like', () => {
+    expect(
+      failing(puzzles, (p) => wiringOf(p).rules.at(-1)!.startsWith('Otherwise, cut the')),
+    ).toEqual([])
+  })
+
+  it('names the rule that fits, and it points at the answer', () => {
+    expect(
+      failing(puzzles, (p) => {
+        const rule = p.hints[1]!.replace('The rule that fits: ', '')
+        const { rules } = wiringOf(p)
+        // The hint's rule must be in the manual, and nothing above it may be the fallback.
+        return rules.includes(rule) && rules.indexOf(rule) <= rules.length - 1
+      }),
+    ).toEqual([])
+  })
+
+  it('gets bigger later in the game: more wires and more rules', () => {
+    const shape = (level: number) => {
+      const puzzlesAt = everyPuzzle(wiring, [level]).map(wiringOf)
+      const sizes = (pick: (v: ReturnType<typeof wiringOf>) => number) => puzzlesAt.map(pick)
+      return {
+        wires: sizes((v) => v.wires.length),
+        rules: sizes((v) => v.rules.length),
+      }
+    }
+    const early = shape(0)
+    const mid = shape(0.5)
+    const late = shape(1)
+
+    expect([Math.min(...early.wires), Math.max(...early.wires)]).toEqual([3, 3])
+    expect([Math.min(...mid.wires), Math.max(...mid.wires)]).toEqual([4, 4])
+    // Late panels are 5 or 6 wires, so the crew can't guess the size from the stage alone.
+    expect([Math.min(...late.wires), Math.max(...late.wires)]).toEqual([5, 6])
+    // Rules include the catch-all last line: 3, then 4, then 5.
+    expect(new Set(early.rules)).toEqual(new Set([3]))
+    expect(new Set(mid.rules)).toEqual(new Set([4]))
+    expect(new Set(late.rules)).toEqual(new Set([5]))
+  })
+
+  it('splits into the panel and the manual, with nothing shared', () => {
+    expect(
+      failing(puzzles, ({ split }) => {
+        const [panel, manual] = split!.pieces.map((piece) => piece.visual)
+        if (panel?.type !== 'wiring' || manual?.type !== 'wiring') return false
+        return (
+          panel.wires.length > 0 &&
+          panel.rules.length === 0 &&
+          manual.wires.length === 0 &&
+          manual.rules.length > 0
+        )
+      }),
+    ).toEqual([])
+  })
+
+  it('accepts "wire 3" and "third" as well as "3"', () => {
+    const [first] = puzzles
+    const cut = Number(first!.answer)
+    expect(checkAnswer(first!, `wire ${cut}`)).toBe(true)
   })
 })

@@ -17,6 +17,7 @@ const PUZZLE_KIND_LABELS: Record<string, string> = {
   glyph: 'Alien glyphs',
   morse: 'Beacon signal',
   gauge: 'Gauge readings',
+  wiring: 'Wiring panel',
   finale: 'Launch sequence',
 }
 
