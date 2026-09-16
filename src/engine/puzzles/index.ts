@@ -1,5 +1,6 @@
 import type { PuzzleGenerator } from '../puzzle.ts'
 import { anagram } from './anagram.ts'
+import { anomaly } from './anomaly.ts'
 import { caesar } from './caesar.ts'
 import { gauge } from './gauge.ts'
 import { glyph } from './glyph.ts'
@@ -24,4 +25,5 @@ export const PUZZLE_GENERATORS: readonly PuzzleGenerator[] = [
   routing,
   memory,
   wheel,
+  anomaly,
 ]

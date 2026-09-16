@@ -148,6 +148,7 @@ Each generator takes a difficulty setting: cipher shift range, sequence rule com
 | 4C    | Alien glyphs (`glyph`): word in symbols with a key plus decoys; one or two symbols missing from the key later                              | `src/engine/puzzles/glyph.ts`    |
 | 4C    | Morse beacon (`morse`): 4–5 letter word blinked and beeped; written out early, light and sound only later                                  | `src/engine/puzzles/morse.ts`    |
 | 4C    | Gauge readings (`gauge`): 3–4 analog dials; fewer printed numbers later, one dial with its scale backwards                                 | `src/engine/puzzles/gauge.ts`    |
+| 5C    | Anomaly sweep (`anomaly`): a scope of contacts with one odd one out; three taps per sweep, then the field is swept again                   | `src/engine/puzzles/anomaly.ts`  |
 | 5C    | Cipher wheel (`wheel`): turn a letter ring against the hull's alphabet until the message reads; the wheel fills the answer in              | `src/engine/puzzles/wheel.ts`    |
 | 5C    | Memory sequence (`memory`): pads flash and beep a pattern to tap back; 4 pads and 4 steps early, 5 pads and 6 quicker steps late           | `src/engine/puzzles/memory.ts`   |
 | 5C    | Power routing (`routing`): turn cable tiles until the reactor reaches the module; the run lights up and logs its own code. No words at all | `src/engine/puzzles/routing.ts`  |

@@ -28,6 +28,18 @@
     }
   }
 
+  /* Contacts on the anomaly scope breathe, so a steady one stands out. */
+  --animate-contact: contact 1.8s ease-in-out infinite;
+  @keyframes contact {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.45;
+    }
+  }
+
   --animate-shake: shake 0.4s ease-in-out;
   @keyframes shake {
     0%,

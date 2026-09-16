@@ -5,6 +5,7 @@ import { createRng } from '../rng.ts'
 import { routeCode } from '../routing.ts'
 import { testTheme } from '../test-fixtures.ts'
 import { anagram } from './anagram.ts'
+import { anomaly, sweepScope } from './anomaly.ts'
 import { caesar, shiftLetters } from './caesar.ts'
 import { PUZZLE_GENERATORS } from './index.ts'
 import { gauge } from './gauge.ts'
@@ -558,5 +559,73 @@ describe('wheel', () => {
     const lengths = (level: number) => everyPuzzle(wheel, [level]).map((p) => p.answer.length)
     expect(Math.max(...lengths(0))).toBeLessThanOrEqual(6)
     expect(Math.min(...lengths(1))).toBeGreaterThanOrEqual(7)
+  })
+})
+
+describe('anomaly', () => {
+  const scopeOf = (p: Generated) => {
+    if (p.visual?.type !== 'anomaly') throw new Error('expected a scope')
+    return p.visual
+  }
+  const puzzles = everyPuzzle(anomaly)
+
+  it('answers with the sector code the anomaly carries', () => {
+    expect(
+      failing(puzzles, (p) => scopeOf(p).code === p.answer && /^\d\d$/.test(p.answer)),
+    ).toEqual([])
+  })
+
+  it('says what to look for early, and stops saying it later', () => {
+    expect(everyPuzzle(anomaly, [0]).filter((p) => !p.prompt.includes('One contact is'))).toEqual(
+      [],
+    )
+    expect(everyPuzzle(anomaly, [1]).filter((p) => p.prompt.includes('One contact is a'))).toEqual(
+      [],
+    )
+  })
+
+  it('uses the plainest tell early and the subtlest late', () => {
+    const tells = (level: number) =>
+      new Set(everyPuzzle(anomaly, [level]).map((p) => scopeOf(p).tell))
+    // Early: colour only. Mid: colour or size. Late: size, or the hardest tell of all — a contact
+    // that doesn't pulse when everything else does.
+    expect(tells(0)).toEqual(new Set(['colour']))
+    expect(tells(0.5)).toEqual(new Set(['size', 'colour']))
+    expect(tells(1)).toEqual(new Set(['still', 'size']))
+  })
+
+  it('fills the scope with more contacts as the shift goes on', () => {
+    const counts = (level: number) => everyPuzzle(anomaly, [level]).map((p) => scopeOf(p).contacts)
+    expect(Math.max(...counts(0))).toBeLessThan(Math.min(...counts(1)))
+    expect(Math.max(...counts(0.5))).toBeLessThan(Math.min(...counts(1)))
+  })
+})
+
+describe('the anomaly scope', () => {
+  it('shows every phone the same field, so a crew can point at it', () => {
+    expect(sweepScope('42', 3, 20)).toEqual(sweepScope('42', 3, 20))
+  })
+
+  it('sweeps somewhere new each time', () => {
+    const first = sweepScope('42', 0, 20)
+    const second = sweepScope('42', 1, 20)
+    expect(
+      second.oddIndex === first.oddIndex && second.contacts[0]!.x === first.contacts[0]!.x,
+    ).toBe(false)
+  })
+
+  it('keeps every contact on the scope, and marks exactly one anomaly', () => {
+    for (let sweep = 0; sweep < 50; sweep++) {
+      const { contacts, oddIndex } = sweepScope('73', sweep, 26)
+      expect(contacts).toHaveLength(26)
+      expect(oddIndex).toBeGreaterThanOrEqual(0)
+      expect(oddIndex).toBeLessThan(26)
+      for (const contact of contacts) {
+        expect(contact.x).toBeGreaterThan(0)
+        expect(contact.x).toBeLessThan(100)
+        expect(contact.y).toBeGreaterThan(0)
+        expect(contact.y).toBeLessThan(100)
+      }
+    }
   })
 })
