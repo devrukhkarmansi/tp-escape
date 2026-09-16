@@ -31,3 +31,8 @@ coverage
 
 # Firebase CLI cache
 .firebase
+
+# Playwright
+/test-results
+/playwright-report
+/blob-report
