@@ -13,8 +13,12 @@ function randomSeed(): number {
   return crypto.getRandomValues(new Uint32Array(1))[0]!
 }
 
-/** A fresh game with the current theme and puzzle types. Used by solo play and crew launches. */
-export function newGame(difficultyId: DifficultyId, startedAt: number): GameState {
+/** A fresh game with the current theme and puzzle types. Crew launches also split some puzzles. */
+export function newGame(
+  difficultyId: DifficultyId,
+  startedAt: number,
+  { crew = false } = {},
+): GameState {
   const difficulty = DIFFICULTIES.find((d) => d.id === difficultyId) ?? DIFFICULTIES[1]!
   return createGame({
     seed: randomSeed(),
@@ -22,6 +26,7 @@ export function newGame(difficultyId: DifficultyId, startedAt: number): GameStat
     theme: THEME,
     generators: PUZZLE_GENERATORS,
     startedAt,
+    splitPuzzles: crew,
   })
 }
 

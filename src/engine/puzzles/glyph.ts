@@ -81,9 +81,19 @@ export const glyph: PuzzleGenerator = {
         ? ''
         : ` ${missing.length === 1 ? 'One symbol is' : 'Two symbols are'} missing from the key: work ${missing.length === 1 ? 'it' : 'them'} out from the word.`
 
+    const prompt = `${intro}. Translate the symbols using the key.${missingNote}`
+    const glyphs = [...word].map(glyphOf)
+
     return {
-      prompt: `${intro}. Translate the symbols using the key.${missingNote}`,
-      visual: { type: 'glyphs', glyphs: [...word].map(glyphOf), key },
+      prompt,
+      visual: { type: 'glyphs', glyphs, key },
+      split: {
+        prompt,
+        pieces: [
+          { label: 'Inscription', visual: { type: 'glyphs', glyphs, key: [] } },
+          { label: 'Symbol key', visual: { type: 'glyphs', glyphs: [], key } },
+        ],
+      },
       answer: word,
       hints: [
         'Match each symbol to the key, one letter at a time.',

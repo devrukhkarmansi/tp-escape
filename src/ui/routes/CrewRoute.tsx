@@ -159,7 +159,7 @@ export default function CrewRoute() {
     if (!room) return
     setLaunching(true)
     try {
-      await launchGame(code, newGame(room.difficultyId, clock()))
+      await launchGame(code, newGame(room.difficultyId, clock(), { crew: true }))
     } catch (e) {
       report(e)
     } finally {

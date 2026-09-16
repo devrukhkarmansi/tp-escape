@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { checkAnswer } from '../check-answer.ts'
-import type { Puzzle, PuzzleGenerator } from '../puzzle.ts'
+import type { GeneratedPuzzle, PuzzleGenerator } from '../puzzle.ts'
 import { createRng } from '../rng.ts'
 import { testTheme } from '../test-fixtures.ts'
 import { anagram } from './anagram.ts'
@@ -15,7 +15,7 @@ import { sequence } from './sequence.ts'
 const SEEDS = Array.from({ length: 1000 }, (_, i) => i * 7919 + 1)
 const LEVELS = [0, 0.5, 1]
 
-type Generated = Omit<Puzzle, 'id' | 'kind'> & { seed: number; level: number }
+type Generated = GeneratedPuzzle & { seed: number; level: number }
 
 function everyPuzzle(generator: PuzzleGenerator, levels = LEVELS): Generated[] {
   return SEEDS.flatMap((seed) =>
@@ -234,5 +234,85 @@ describe('gauge', () => {
     expect(dials(1).every((g) => g.length === 4 && g.filter((d) => d.reversed).length === 1)).toBe(
       true,
     )
+  })
+})
+
+describe('split pieces', () => {
+  const splittable = [caesar, glyph, morse, gauge]
+
+  it.each(splittable.map((g) => [g.kind, g] as const))(
+    '%s splits into labelled pieces that each show something',
+    (_kind, generator) => {
+      const split = everyPuzzle(generator).filter((p) => p.split)
+      expect(split.length).toBeGreaterThan(0)
+      expect(
+        failing(
+          split,
+          ({ split }) =>
+            split!.pieces.length >= 2 &&
+            split!.pieces.every(
+              (piece) => piece.label && (piece.text || piece.display || piece.visual),
+            ),
+        ),
+      ).toEqual([])
+    },
+  )
+
+  it('does not split riddles, anagrams or number patterns', () => {
+    for (const generator of [riddle, anagram, sequence]) {
+      expect(everyPuzzle(generator).filter((p) => p.split)).toEqual([])
+    }
+  })
+
+  it('caesar: the key piece decodes the message piece, and late codes have no key to split', () => {
+    const early = everyPuzzle(caesar, [0])
+    expect(
+      failing(early, ({ split, answer }) => {
+        const [message, key] = split!.pieces
+        const shift = Number(key!.display!.slice(1))
+        return shiftLetters(answer, shift) === message!.display
+      }),
+    ).toEqual([])
+    expect(everyPuzzle(caesar, [1]).filter((p) => p.split)).toEqual([])
+  })
+
+  it('glyph: the inscription and the key pieces together are the whole puzzle', () => {
+    expect(
+      failing(everyPuzzle(glyph), ({ split, visual }) => {
+        const [inscription, key] = split!.pieces.map((piece) => piece.visual)
+        if (visual?.type !== 'glyphs' || inscription?.type !== 'glyphs' || key?.type !== 'glyphs') {
+          return false
+        }
+        return (
+          inscription.key.length === 0 &&
+          key.glyphs.length === 0 &&
+          JSON.stringify(inscription.glyphs) === JSON.stringify(visual.glyphs) &&
+          JSON.stringify(key.key) === JSON.stringify(visual.key)
+        )
+      }),
+    ).toEqual([])
+  })
+
+  it('morse: the beacon piece has no chart, and the chart is its own piece', () => {
+    expect(
+      failing(everyPuzzle(morse), ({ split }) => {
+        const [beacon, chart] = split!.pieces.map((piece) => piece.visual)
+        return beacon?.type === 'morse' && beacon.chart === false && chart?.type === 'morse-chart'
+      }),
+    ).toEqual([])
+  })
+
+  it('gauge: the two banks of dials read, in order, as the whole answer', () => {
+    expect(
+      failing(everyPuzzle(gauge), ({ split, answer }) => {
+        let next = 0
+        const readings = split!.pieces.map((piece) => {
+          if (piece.visual?.type !== 'gauges' || piece.visual.firstDial !== next) return '?'
+          next += piece.visual.gauges.length
+          return piece.visual.gauges.map((g) => g.value).join('')
+        })
+        return readings.join('') === answer
+      }),
+    ).toEqual([])
   })
 })
