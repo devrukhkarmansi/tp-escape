@@ -1,3 +1,4 @@
+import { motion } from 'motion/react'
 import { awardsFor } from '../../engine/awards.ts'
 import { isFinale, timeLeftMs, type GameState } from '../../engine/game.ts'
 import { POINTS, scoreGame } from '../../engine/score.ts'
@@ -120,9 +121,13 @@ export default function DebriefScreen({
                 Commendations
               </h2>
               <ul className="grid gap-2 sm:grid-cols-2">
-                {awards.map((award) => (
-                  <li
+                {awards.map((award, index) => (
+                  <motion.li
                     key={award.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    // One after another, so the crew reads them rather than scanning past.
+                    transition={{ duration: 0.3, delay: index * 0.12, ease: 'easeOut' }}
                     className="rounded-xl border border-nominal/30 bg-nominal/5 px-4 py-3"
                   >
                     <p className="font-display text-sm font-bold text-nominal">
@@ -132,7 +137,7 @@ export default function DebriefScreen({
                       )}
                     </p>
                     <p className="mt-1 text-sm/6 text-ink-muted">{award.description}</p>
-                  </li>
+                  </motion.li>
                 ))}
               </ul>
             </section>
